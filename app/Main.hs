@@ -4,26 +4,27 @@ module Main where
 
 import Data.Foldable (for_)
 import Data.List     (intercalate)
-import System.IO     (hPutStrLn, stderr)
+
+import qualified Streaming         as S
+import qualified Streaming.Prelude as SP
 
 import Lux.Render
 import Lux.Vector
 
 
-render :: Scene -> IO ()
-render scene@Scene {..} = do
-    -- PPM header
-    putStrLn $ "P3\n" <> show sWidth <> " " <> show sHeight <> "\n255"
-    for_ [sHeight - 1, sHeight - 2..0] $ \j -> do
-        -- Progress report
-        hPutStrLn stderr $ "On row " <> show j
-        for_ [0..sWidth - 1] $ \i -> do
-            Vector r g b <- withAA scene i j
-            putStrLn . intercalate " " $
-                show . floor . (255.99 *) <$> [r, g, b]
+-- | PPM header.
+header :: Scene -> String
+header scene = intercalate "\n" ["P3", show w <> " " <> show h, "255"]
+  where
+    h = sHeight scene
+    w = sWidth scene
 
-main :: IO ()
-main = render Scene
+serialize :: Vector -> String
+serialize (Vector r g b) = intercalate " " $
+    show . floor . (255.99 *) <$> [r, g, b]
+
+defaultScene :: Scene
+defaultScene = Scene
     { sWidth      = 800
     , sHeight     = 400
     , sEye        = Vector 0 0 0
@@ -35,3 +36,20 @@ main = render Scene
         , mkSphere (Vector 0 (-100.5) (-1)) 100
         ]
     }
+
+render :: Scene -> S.Stream (S.Of Vector) IO ()
+render scene =
+    for_ [h - 1, h - 2..0] $ \j ->
+        for_ [0..w - 1] $ \i ->
+            S.liftIO (withAA scene i j) >>= SP.yield
+  where
+    h = sHeight scene
+    w = sWidth scene
+
+main :: IO ()
+main = SP.stdoutLn
+    . SP.cons (header scene)
+    . SP.map serialize
+    . render $ scene
+  where
+    scene = defaultScene
