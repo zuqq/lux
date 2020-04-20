@@ -1,13 +1,9 @@
+{-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Lux.Render where
 
-import Control.Applicative        ((<|>))
-import Control.Monad              (replicateM)
 import Control.Monad.Random.Class (MonadRandom, getRandomR, getRandomRs)
-import Data.List                  (minimumBy)
-import Data.Maybe                 (catMaybes)
-import Data.Ord                   (comparing)
 
 import Lux.Vector
 
@@ -29,7 +25,7 @@ data Scene = Scene
     { sWidth      :: !Int
     , sHeight     :: !Int
     , sEye        :: !Vector
-    , sLowerLeft  :: !Vector 
+    , sLowerLeft  :: !Vector
     , sHorizontal :: !Vector
     , sVertical   :: !Vector
     , sWorld      :: !Object
@@ -43,7 +39,7 @@ data Ray = Ray
     }
 
 at :: Ray -> Double -> Vector
-at Ray {..} t = rOrigin <> t *^ rDirection
+at Ray {..} t = rOrigin `plus` t *^ rDirection
 
 -- Hits
 
@@ -53,24 +49,16 @@ data Hit = Hit
     , hNormal :: !Vector
     }
 
+instance Semigroup Hit where
+    h <> h' = if hTime h < hTime h' then h else h'
+
 -- Objects
 
-newtype Object = Object
-    { hit
-        :: (Double -> Bool)  -- ^ Range check.
-        -> Ray
-        -> Maybe Hit
-    }
+newtype Object = Object { hit :: (Double -> Bool) -> Ray -> Maybe Hit }
 
 fromList :: [Object] -> Object
-fromList objs = Object $ \range ray -> do
-    hs <- invert [ hit obj range ray | obj <- objs ]
-    return . minimumBy (comparing hTime) $ hs
-  where
-    invert :: [Maybe a] -> Maybe [a]
-    invert mas = case catMaybes mas of
-        [] -> Nothing
-        as -> Just as
+fromList objs = Object $ \check ray ->
+    foldMap (\obj -> hit obj check ray) objs
 
 -- Spheres
 
@@ -87,7 +75,7 @@ mkSphere center radius = Object $ \check ray@Ray {..} -> do
     root <- safeSqrt disc
     let t  = (-b - root) / a
     let t' = (-b + root) / a
-    mkHit check ray t <|> mkHit check ray t'
+    mkHit check ray t <> mkHit check ray t'
   where
     safeSqrt x
         | x < 0     = Nothing
@@ -114,28 +102,32 @@ rayColor
     -> Ray
     -> Int            -- ^ Depth
     -> m Vector
-rayColor world ray@(Ray _ d) depth
-    | depth <= 0 = return black
-    | otherwise  = case hit world (>= 0.001) ray of
-        Nothing       -> return $ (1 - t) *^ white <> t *^ blue
-        Just Hit {..} -> do
-            n <- randUnit
-            let ray' = Ray hPoint (hNormal <> n)
-            c <- rayColor world ray' (depth - 1)
-            return $ 0.5 *^ c
+rayColor world = go 1
   where
-    t = 0.5 * (y (unit d) + 1.0)
+    go !int ray@(Ray _ d) depth = if depth <= 0
+        then return black
+        else case hit world (>= 0.001) ray of
+            Nothing -> let t = (y (unit d) + 1) / 2 in return $
+                int *^ ((1 - t) *^ white `plus` t *^ blue)
+            Just Hit {..} -> do
+                n <- randUnit
+                go (int / 2) (Ray hPoint (hNormal `plus` n)) (depth - 1)
 
 pxColor :: MonadRandom m => Scene -> Int -> Int -> m Vector
 pxColor scene@Scene {..} i j = do
-    eu <- getRandomR (-1, 1) 
-    ev <- getRandomR (-1, 1) 
+    eu <- getRandomR (-1, 1)
+    ev <- getRandomR (-1, 1)
     let u = (fromIntegral i + eu) / fromIntegral sWidth
     let v = (fromIntegral j + ev) / fromIntegral sHeight
-    let ray = Ray sEye (sLowerLeft <> u *^ sHorizontal <> v *^ sVertical)
+    let ray = Ray sEye $
+            sLowerLeft `plus` u *^ sHorizontal `plus` v *^ sVertical
     rayColor sWorld ray 50
 
 -- Antialiasing
 
 withAA :: MonadRandom m => Scene -> Int -> Int -> m Vector
-withAA scene i j = (/^ 100) . mconcat <$> replicateM 100 (pxColor scene i j)
+withAA scene i j = (/^ 100) <$> go (return $ Vector 0 0 0) 100
+  where
+    go !acc k = if k <= 0
+        then acc
+        else go (plus <$> pxColor scene i j <*> acc) (k - 1)

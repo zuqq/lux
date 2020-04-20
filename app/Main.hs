@@ -28,7 +28,7 @@ main = render Scene
     , sHeight     = 400
     , sEye        = Vector 0 0 0
     , sLowerLeft  = Vector (-2) (-1) (-1)
-    , sHorizontal = Vector 4 0 0 
+    , sHorizontal = Vector 4 0 0
     , sVertical   = Vector 0 2 0
     , sWorld      = fromList
         [ mkSphere (Vector 0 0 (-1)) 0.5
