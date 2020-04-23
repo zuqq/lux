@@ -1,55 +1,53 @@
-{-# LANGUAGE RecordWildCards #-}
-
 module Main where
 
-import Data.Foldable (for_)
-import Data.List     (intercalate)
-
-import qualified Streaming         as S
-import qualified Streaming.Prelude as SP
+import Control.Monad              ((>=>))
+import Control.Monad.Random.Class (MonadRandom, getRandomR)
+import Data.Foldable              (traverse_)
+import Data.List                  (intercalate)
 
 import Lux.Render
 import Lux.Vector
 
 
 -- | PPM header.
-header :: Scene -> String
-header scene = intercalate "\n" ["P3", show w <> " " <> show h, "255"]
-  where
-    h = sHeight scene
-    w = sWidth scene
+header
+    :: Int     -- ^ Width
+    -> Int     -- ^ Height
+    -> String
+header w h = intercalate "\n" ["P3", show w <> " " <> show h, "255"]
 
 serialize :: Vector -> String
 serialize (Vector r g b) = intercalate " " $
     show . floor . (255.99 *) <$> [r, g, b]
 
-defaultScene :: Scene
-defaultScene = Scene
-    { sWidth      = 800
-    , sHeight     = 400
-    , sEye        = Vector 0 0 0
-    , sLowerLeft  = Vector (-2) (-1) (-1)
-    , sHorizontal = Vector 4 0 0
-    , sVertical   = Vector 0 2 0
-    , sWorld      = fromList
-        [ mkSphere (Vector 0 0 (-1)) 0.5
-        , mkSphere (Vector 0 (-100.5) (-1)) 100
-        ]
-    }
-
-render :: Scene -> S.Stream (S.Of Vector) IO ()
-render scene =
-    for_ [h - 1, h - 2..0] $ \j ->
-        for_ [0..w - 1] $ \i ->
-            S.liftIO (withAA scene i j) >>= SP.yield
+render
+    :: MonadRandom m
+    => Object          -- ^ World
+    -> (Int, Int)      -- ^ (Column, Row)
+    -> m Vector
+render world (col, row) = sample world mray
   where
-    h = sHeight scene
-    w = sWidth scene
+    (.+) = (+) . fromIntegral
+    mray = do
+        dx <- getRandomR (0, 1)
+        dy <- getRandomR (0, 1)
+        let x = (col .+ dx) / 800
+            y = (row .+ dy) / 400
+        return . Ray white (Vector 0 0 0) $
+            Vector (-2) (-1) (-1)
+            `plus` x *^ (Vector 4 0 0)
+            `plus` y *^ (Vector 0 2 0)
 
 main :: IO ()
-main = SP.stdoutLn
-    . SP.cons (header scene)
-    . SP.map serialize
-    . render $ scene
+main = do
+    putStrLn (header w h)
+    traverse_ (render world >=> putStrLn . serialize)
+        [ (col, row) | row <- [h - 1, h - 2..0], col <- [0..w - 1] ]
   where
-    scene = defaultScene
+    w = 800
+    h = 400
+    world = fromList
+        [ metalSphere (Sphere (Vector (-0.5) 0 (-1)) 0.5) (Vector 0.8 0.6 0.2)
+        , metalSphere (Sphere (Vector 0.5 0 (-1)) 0.5) (Vector 0.8 0.8 0.8)
+        , lambSphere (Sphere (Vector 0 (-100.5) (-1)) 100) (Vector 0.8 0.8 0)
+        ]

@@ -3,7 +3,8 @@
 
 module Lux.Render where
 
-import Control.Monad.Random.Class (MonadRandom, getRandomR, getRandomRs)
+import Control.Applicative        ((<|>))
+import Control.Monad.Random.Class (MonadRandom, getRandomR)
 
 import Lux.Vector
 
@@ -19,22 +20,17 @@ white = Vector 1 1 1
 blue :: Vector
 blue = Vector 0.5 0.7 1
 
--- Scenes
-
-data Scene = Scene
-    { sWidth      :: !Int
-    , sHeight     :: !Int
-    , sEye        :: !Vector
-    , sLowerLeft  :: !Vector
-    , sHorizontal :: !Vector
-    , sVertical   :: !Vector
-    , sWorld      :: !Object
-    }
+-- | Linear white-to-blue gradient.
+sky :: Ray -> Vector
+sky (Ray _ _ d) = (1 - t) *^ white `plus` t *^ blue
+  where
+    t = (vY (unit d) + 1) / 2
 
 -- Rays
 
 data Ray = Ray
-    { rOrigin    :: !Vector
+    { rColor     :: !Vector
+    , rOrigin    :: !Vector
     , rDirection :: !Vector
     }
 
@@ -44,9 +40,8 @@ at Ray {..} t = rOrigin `plus` t *^ rDirection
 -- Hits
 
 data Hit = Hit
-    { hTime   :: !Double
-    , hPoint  :: !Vector
-    , hNormal :: !Vector
+    { hTime    :: !Double
+    , hScatter :: !(Vector -> Ray)
     }
 
 instance Semigroup Hit where
@@ -54,38 +49,62 @@ instance Semigroup Hit where
 
 -- Objects
 
-newtype Object = Object { hit :: (Double -> Bool) -> Ray -> Maybe Hit }
+newtype Object = Object { hit :: Ray -> Maybe Hit }
 
 fromList :: [Object] -> Object
-fromList objs = Object $ \check ray ->
-    foldMap (\obj -> hit obj check ray) objs
+fromList objs = Object $ \ray -> foldMap (`hit` ray) objs
 
 -- Spheres
 
-mkSphere
-    :: Vector  -- ^ Center
-    -> Double  -- ^ Radius
-    -> Object
-mkSphere center radius = Object $ \check ray@Ray {..} -> do
-    let oc = rOrigin `minus` center
-    let a  = dot rDirection rDirection
-    let b  = dot oc rDirection
-    let c  = dot oc oc - radius * radius
-    let disc = b * b - a * c
-    root <- safeSqrt disc
-    let t  = (-b - root) / a
-    let t' = (-b + root) / a
-    mkHit check ray t <> mkHit check ray t'
+data Sphere = Sphere
+    { sCenter :: !Vector
+    , sRadius :: !Double
+    }
+
+time :: Sphere -> Ray -> Maybe Double
+time Sphere {..} Ray {..} =
+    let oc = rOrigin `minus` sCenter
+        a  = dot rDirection rDirection
+        b  = dot oc rDirection
+        c  = dot oc oc - sRadius * sRadius
+        disc = b * b - a * c
+    in safeSqrt disc >>= \root ->
+        let t  = (-b - root) / a
+            t' = (-b + root) / a
+        in safeTime t <|> safeTime t'
   where
     safeSqrt x
         | x < 0     = Nothing
-        | otherwise = Just (sqrt x)
-    mkHit check ray t
-        | not (check t) = Nothing
-        | otherwise     = Just $ Hit t p n
-      where
-        p = ray `at` t
-        n = (p `minus` center) /^ radius
+        | otherwise = Just $ sqrt x
+    safeTime t
+        | t < 0.001 = Nothing
+        | otherwise = Just t
+
+normal :: Sphere -> Vector -> Vector
+normal Sphere {..} p = (p `minus` sCenter) /^ sRadius
+
+lambSphere :: Sphere -> Vector -> Object
+lambSphere sphere color = Object $ \ray -> do
+    t <- time sphere ray
+    let p = ray `at` t
+    Just . Hit t $ \u -> Ray
+        { rColor     = rColor ray `prod` color
+        , rOrigin    = p
+        , rDirection = (normal sphere p) `plus` u
+        }
+
+reflect :: Vector -> Vector -> Vector
+reflect n v = v `minus` (2 *^ dot n v *^ n)
+
+metalSphere :: Sphere -> Vector -> Object
+metalSphere sphere color = Object $ \ray -> do
+    t <- time sphere ray
+    let p = ray `at` t
+    Just . Hit t $ \_ -> Ray
+        { rColor     = rColor ray `prod` color
+        , rOrigin    = p
+        , rDirection = reflect (normal sphere p) (rDirection ray)
+        }
 
 -- Rendering
 
@@ -96,38 +115,28 @@ randUnit = do
     let r = sqrt $ 1 - z * z
     return $ Vector (r * cos a) (r * sin a) z
 
-rayColor
+bounce
     :: MonadRandom m
     => Object
-    -> Ray
-    -> Int            -- ^ Depth
+    -> m Ray
     -> m Vector
-rayColor world = go 1
+bounce world = go 50
   where
-    go !int ray@(Ray _ d) depth = if depth <= 0
-        then return black
-        else case hit world (>= 0.001) ray of
-            Nothing -> let t = (y (unit d) + 1) / 2 in return $
-                int *^ ((1 - t) *^ white `plus` t *^ blue)
-            Just Hit {..} -> do
-                n <- randUnit
-                go (int / 2) (Ray hPoint (hNormal `plus` n)) (depth - 1)
-
-pxColor :: MonadRandom m => Scene -> Int -> Int -> m Vector
-pxColor scene@Scene {..} i j = do
-    eu <- getRandomR (-1, 1)
-    ev <- getRandomR (-1, 1)
-    let u = (fromIntegral i + eu) / fromIntegral sWidth
-    let v = (fromIntegral j + ev) / fromIntegral sHeight
-    let ray = Ray sEye $
-            sLowerLeft `plus` u *^ sHorizontal `plus` v *^ sVertical
-    rayColor sWorld ray 50
+    go k !acc = acc >>= \ray -> if k <= 0
+        then return $ rColor ray `prod` black
+        else case hit world ray of
+            Nothing        -> return $ rColor ray `prod` sky ray
+            Just (Hit _ f) -> go (k - 1) (f <$> randUnit)
 
 -- Antialiasing
 
-withAA :: MonadRandom m => Scene -> Int -> Int -> m Vector
-withAA scene i j = (/^ 100) <$> go (return $ Vector 0 0 0) 100
+sample
+    :: MonadRandom m
+    => Object         -- ^ World.
+    -> m Ray          -- ^ Target.
+    -> m Vector
+sample world mray = (/^ 100) <$> go 100 (return $ Vector 0 0 0)
   where
-    go !acc k = if k <= 0
+    go k !acc = if k <= 0
         then acc
-        else go (plus <$> pxColor scene i j <*> acc) (k - 1)
+        else go (k - 1) (plus <$> bounce world mray <*> acc)
