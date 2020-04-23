@@ -3,7 +3,6 @@ module Main where
 import Control.Monad              ((>=>))
 import Control.Monad.Random.Class (MonadRandom, getRandomR)
 import Data.Foldable              (traverse_)
-import Data.List                  (intercalate)
 
 import Lux.Render
 import Lux.Vector
@@ -17,8 +16,7 @@ header
 header w h = intercalate "\n" ["P3", show w <> " " <> show h, "255"]
 
 serialize :: Vector -> String
-serialize (Vector r g b) = intercalate " " $
-    show . floor . (255.99 *) <$> [r, g, b]
+serialize (Vector r g b) = unwords $ show . floor . (255.99 *) <$> [r, g, b]
 
 render
     :: MonadRandom m
@@ -35,8 +33,8 @@ render world (col, row) = sample world mray
             y = (row .+ dy) / 400
         return . Ray white (Vector 0 0 0) $
             Vector (-2) (-1) (-1)
-            `plus` x *^ (Vector 4 0 0)
-            `plus` y *^ (Vector 0 2 0)
+            `plus` x *^ Vector 4 0 0
+            `plus` y *^ Vector 0 2 0
 
 main :: IO ()
 main = do

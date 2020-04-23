@@ -90,7 +90,7 @@ lambSphere sphere color = Object $ \ray -> do
     Just . Hit t $ \u -> Ray
         { rColor     = rColor ray `prod` color
         , rOrigin    = p
-        , rDirection = (normal sphere p) `plus` u
+        , rDirection = normal sphere p `plus` u
         }
 
 reflect :: Vector -> Vector -> Vector
@@ -100,7 +100,7 @@ metalSphere :: Sphere -> Vector -> Object
 metalSphere sphere color = Object $ \ray -> do
     t <- time sphere ray
     let p = ray `at` t
-    Just . Hit t $ \_ -> Ray
+    Just . Hit t $ const Ray
         { rColor     = rColor ray `prod` color
         , rOrigin    = p
         , rDirection = reflect (normal sphere p) (rDirection ray)
