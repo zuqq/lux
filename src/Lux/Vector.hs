@@ -1,4 +1,15 @@
-module Lux.Vector where
+module Lux.Vector
+    ( (*^)
+    , (/^)
+    , Vector (..)
+    , cross
+    , dot
+    , len
+    , minus
+    , plus
+    , prod
+    , unit
+    ) where
 
 
 data Vector = Vector
@@ -24,7 +35,10 @@ prod (Vector x y z) (Vector x' y' z') = Vector (x * x') (y * y') (z * z')
 minus :: Vector -> Vector -> Vector
 minus (Vector x y z) (Vector x' y' z') = Vector (x - x') (y - y') (z - z')
 
--- |
+-- | Cross product of two vectors.
+--
+-- ==== __Examples__
+--
 -- >>> cross (Vector 1 0 0) (Vector 0 1 0)
 -- Vector {vX = 0.0, vY = 0.0, vZ = 1.0}
 -- >>> cross (Vector 1 2 3) (Vector (-7) 8 9)

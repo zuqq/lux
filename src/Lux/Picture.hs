@@ -1,11 +1,16 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Lux.Picture where
+module Lux.Picture
+    ( Picture (..)
+    , header
+    , render
+    , serialize
+    ) where
 
 import Control.Monad.Random.Class (MonadRandom, getRandom)
 
-import Lux.Render
-import Lux.Vector
+import Lux.Render (Object, Ray (..), sample, white)
+import Lux.Vector ((*^), (/^), cross, minus, plus, unit, Vector (..))
 
 
 -- | Newline-terminated PPM header.

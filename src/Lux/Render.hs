@@ -1,15 +1,22 @@
 {-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Lux.Render where
+module Lux.Render
+    ( Object
+    , Ray (..)
+    , fromList
+    , lambSphere
+    , metalSphere
+    , Sphere (..)
+    , sample
+    , white
+    ) where
 
 import Control.Applicative        ((<|>))
 import Control.Monad.Random.Class (MonadRandom, getRandomR)
 
-import Lux.Vector
+import Lux.Vector ((*^), (/^), Vector (..), dot, minus, plus, prod, unit)
 
-
--- Colors
 
 black :: Vector
 black = Vector 0 0 0
