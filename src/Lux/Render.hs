@@ -1,73 +1,25 @@
 {-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE RecordWildCards #-}
 
-module Lux.Render
-    ( Object
-    , Ray (..)
-    , fromList
-    , lambSphere
+module Lux.Trace
+    ( lambSphere
     , metalSphere
-    , Sphere (..)
     , sample
-    , white
     ) where
 
 import Control.Applicative        ((<|>))
+import Control.Monad              (replicateM)
 import Control.Monad.Random.Class (MonadRandom, getRandomR)
 
-import Lux.Vector ((*^), (/^), Vector (..), dot, minus, plus, prod, unit)
+import Lux.Color  (average, black, Color, mix, sky)
+import Lux.Types  (Hit (..), Object (..), Ray (..), Sphere (..))
+import Lux.Vector ((*^), (/^), Vector (..), dot, minus, plus)
 
-
-black :: Vector
-black = Vector 0 0 0
-
-white :: Vector
-white = Vector 1 1 1
-
-blue :: Vector
-blue = Vector 0.5 0.7 1
-
--- | Linear white-to-blue gradient.
-sky :: Ray -> Vector
-sky (Ray _ _ d) = (1 - t) *^ white `plus` t *^ blue
-  where
-    t = (vY (unit d) + 1) / 2
-
--- Rays
-
-data Ray = Ray
-    { rColor     :: !Vector
-    , rOrigin    :: !Vector
-    , rDirection :: !Vector
-    }
-    deriving (Read, Show)
-
-at :: Ray -> Double -> Vector
-at Ray {..} t = rOrigin `plus` t *^ rDirection
-
--- Hits
-
-data Hit = Hit
-    { hTime    :: !Double
-    , hScatter :: !(Vector -> Ray)
-    }
-
-instance Semigroup Hit where
-    h <> h' = if hTime h < hTime h' then h else h'
-
--- Objects
-
-newtype Object = Object { hit :: Ray -> Maybe Hit }
-
-fromList :: [Object] -> Object
-fromList objs = Object $ \ray -> foldMap (`hit` ray) objs
 
 -- Spheres
 
-data Sphere = Sphere
-    { sCenter :: !Vector
-    , sRadius :: !Double
-    }
+at :: Ray -> Double -> Vector
+at Ray {..} t = rOrigin `plus` t *^ rDirection
 
 time :: Sphere -> Ray -> Maybe Double
 time Sphere {..} Ray {..} =
@@ -91,12 +43,12 @@ time Sphere {..} Ray {..} =
 normal :: Sphere -> Vector -> Vector
 normal Sphere {..} p = (p `minus` sCenter) /^ sRadius
 
-lambSphere :: Sphere -> Vector -> Object
+lambSphere :: Sphere -> Color -> Object
 lambSphere sphere color = Object $ \ray -> do
     t <- time sphere ray
     let p = ray `at` t
     Just . Hit t $ \u -> Ray
-        { rColor     = rColor ray `prod` color
+        { rColor     = mix (rColor ray) color
         , rOrigin    = p
         , rDirection = normal sphere p `plus` u
         }
@@ -104,17 +56,17 @@ lambSphere sphere color = Object $ \ray -> do
 reflect :: Vector -> Vector -> Vector
 reflect n v = v `minus` (2 *^ dot n v *^ n)
 
-metalSphere :: Sphere -> Vector -> Object
+metalSphere :: Sphere -> Color -> Object
 metalSphere sphere color = Object $ \ray -> do
     t <- time sphere ray
     let p = ray `at` t
     Just . Hit t $ const Ray
-        { rColor     = rColor ray `prod` color
+        { rColor     = mix (rColor ray) color
         , rOrigin    = p
         , rDirection = reflect (normal sphere p) (rDirection ray)
         }
 
--- Rendering
+-- Ray tracing
 
 randUnit :: MonadRandom m => m Vector
 randUnit = do
@@ -127,24 +79,18 @@ bounce
     :: MonadRandom m
     => Object
     -> m Ray
-    -> m Vector
+    -> m Color
 bounce world = go 50
   where
-    go k !acc = acc >>= \ray -> if k <= 0
-        then return $ rColor ray `prod` black
+    go k !acc = acc >>= \ray@Ray {..} -> if k <= 0
+        then return $ mix rColor black
         else case hit world ray of
-            Nothing        -> return $ rColor ray `prod` sky ray
+            Nothing        -> return $ mix rColor (sky rDirection)
             Just (Hit _ f) -> go (k - 1) (f <$> randUnit)
-
--- Antialiasing
 
 sample
     :: MonadRandom m
     => Object         -- ^ World.
     -> m Ray          -- ^ Target.
-    -> m Vector
-sample world mray = (/^ 100) <$> go 100 (return $ Vector 0 0 0)
-  where
-    go k !acc = if k <= 0
-        then acc
-        else go (k - 1) (plus <$> bounce world mray <*> acc)
+    -> m Color
+sample world mray = average <$> replicateM 100 (bounce world mray)

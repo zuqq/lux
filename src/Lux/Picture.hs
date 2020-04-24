@@ -1,6 +1,6 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Lux.Picture
+module Lux.Render
     ( Picture (..)
     , header
     , render
@@ -9,7 +9,9 @@ module Lux.Picture
 
 import Control.Monad.Random.Class (MonadRandom, getRandom)
 
-import Lux.Render (Object, Ray (..), sample, white)
+import Lux.Color  (Color (..), white)
+import Lux.Trace  (sample)
+import Lux.Types  (Object, Ray (..))
 import Lux.Vector ((*^), (/^), cross, minus, plus, unit, Vector (..))
 
 
@@ -20,8 +22,8 @@ header
     -> String
 header w h = unlines ["P3", show w <> " " <> show h, "255"]
 
-serialize :: Vector -> String
-serialize (Vector r g b) = unwords $ show . floor . (255.99 *) <$> [r, g, b]
+serialize :: Color -> String
+serialize (Color r g b) = unwords $ show . floor . (255.99 *) <$> [r, g, b]
 
 data Picture = Picture
     { pCenter :: !Vector
@@ -56,7 +58,7 @@ render
     => Picture
     -> Object          -- ^ World
     -> (Int, Int)      -- ^ (Column, Row)
-    -> m Vector
+    -> m Color
 render picture world (col, row) = sample world $ do
     dx <- getRandom
     dy <- getRandom

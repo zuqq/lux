@@ -7,7 +7,6 @@ module Lux.Vector
     , len
     , minus
     , plus
-    , prod
     , unit
     ) where
 
@@ -21,16 +20,13 @@ data Vector = Vector
 
 infixr 5 `cross`, `dot`
 infixr 6 `plus`
-infixr 7 *^, `prod`
+infixr 7 *^
 
 infixl 6 `minus`
 infixl 7 /^
 
 plus :: Vector -> Vector -> Vector
 plus (Vector x y z) (Vector x' y' z') = Vector (x + x') (y + y') (z + z')
-
-prod :: Vector -> Vector -> Vector
-prod (Vector x y z) (Vector x' y' z') = Vector (x * x') (y * y') (z * z')
 
 minus :: Vector -> Vector -> Vector
 minus (Vector x y z) (Vector x' y' z') = Vector (x - x') (y - y') (z - z')

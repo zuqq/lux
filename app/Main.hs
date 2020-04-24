@@ -3,8 +3,10 @@ module Main where
 import Control.Monad ((>=>))
 import Data.Foldable (traverse_)
 
-import Lux.Picture
+import Lux.Color
 import Lux.Render
+import Lux.Trace
+import Lux.Types
 import Lux.Vector
 
 
@@ -24,7 +26,7 @@ main = putStr (header w h) >>
         , pHeight = h
         }
     world = fromList
-        [ metalSphere (Sphere (Vector (-0.5) 0 (-1)) 0.5) (Vector 0.8 0.6 0.2)
-        , metalSphere (Sphere (Vector 0.5 0 (-1)) 0.5) (Vector 0.8 0.8 0.8)
-        , lambSphere (Sphere (Vector 0 (-100.5) (-1)) 100) (Vector 0.8 0.8 0)
+        [ metalSphere (Sphere (Vector (-0.5) 0 (-1)) 0.5) (Color 0.8 0.6 0.2)
+        , metalSphere (Sphere (Vector 0.5 0 (-1)) 0.5) (Color 0.8 0.8 0.8)
+        , lambSphere (Sphere (Vector 0 (-100.5) (-1)) 100) (Color 0.8 0.8 0)
         ]
