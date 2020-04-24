@@ -27,11 +27,11 @@ serialize (Color r g b) = unwords $ show . floor . (255.99 *) <$> [r, g, b]
 
 data Picture = Picture
     { pCenter :: !Vector
-    , pFocus  :: !Vector
+    , pFocus  :: !Vector  -- ^ Focal point.
     , pUp     :: !Vector
-    , pAngle  :: !Double
-    , pWidth  :: !Int
-    , pHeight :: !Int
+    , pAngle  :: !Double  -- ^ Angle of view.
+    , pWidth  :: !Int     -- ^ Width in pixels.
+    , pHeight :: !Int     -- ^ Height in pixels.
     }
 
 shoot

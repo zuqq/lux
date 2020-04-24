@@ -32,12 +32,14 @@ infixl 7 /^
 plus :: Color -> Color -> Color
 plus (Color r g b) (Color r' g' b') = Color (r + r') (g + g') (b + b')
 
+-- | Channel-wise product of two colors.
 mix :: Color -> Color -> Color
 mix (Color r g b) (Color r' g' b') = Color (r * r') (g * g') (b * b')
 
+-- | Channel-wise arithmetic mean of a list of colors.
 average :: [Color] -> Color
 average [] = black
-average cs = (foldr plus black cs) /^ length' cs
+average cs = foldr plus black cs /^ length' cs
   where
     length' = fromIntegral . length
 
