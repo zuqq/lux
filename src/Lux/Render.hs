@@ -33,6 +33,7 @@ data Ray = Ray
     , rOrigin    :: !Vector
     , rDirection :: !Vector
     }
+    deriving (Read, Show)
 
 at :: Ray -> Double -> Vector
 at Ray {..} t = rOrigin `plus` t *^ rDirection

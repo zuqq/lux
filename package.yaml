@@ -38,4 +38,5 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - doctest
     - lux
