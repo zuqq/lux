@@ -1,13 +1,13 @@
 module Lux.Color
-    ( average
-    , Color (..)
+    ( Color (..)
+    , average
+    , black
     , mix
     , sky
-    , black
     , white
     ) where
 
-import Lux.Vector (unit, Vector (..))
+import Lux.Vector (Vector (..), unit)
 
 
 data Color = Color

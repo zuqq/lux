@@ -11,7 +11,7 @@ import Control.Applicative        ((<|>))
 import Control.Monad              (replicateM)
 import Control.Monad.Random.Class (MonadRandom, getRandomR)
 
-import Lux.Color  (average, black, Color, mix, sky)
+import Lux.Color  (Color, average, black, mix, sky)
 import Lux.Types  (Hit (..), Object (..), Ray (..), Sphere (..))
 import Lux.Vector ((*^), (/^), Vector (..), dot, minus, plus)
 

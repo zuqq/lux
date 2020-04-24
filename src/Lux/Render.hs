@@ -12,7 +12,7 @@ import Control.Monad.Random.Class (MonadRandom, getRandom)
 import Lux.Color  (Color (..), white)
 import Lux.Trace  (sample)
 import Lux.Types  (Object, Ray (..))
-import Lux.Vector ((*^), (/^), cross, minus, plus, unit, Vector (..))
+import Lux.Vector ((*^), (/^), Vector, cross, minus, plus, unit)
 
 
 -- | Newline-terminated PPM header.
