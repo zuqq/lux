@@ -77,7 +77,7 @@ randUnit = do
 
 bounce
     :: MonadRandom m
-    => Object
+    => Object         -- ^ World
     -> m Ray
     -> m Color
 bounce world = go 50
@@ -90,7 +90,7 @@ bounce world = go 50
 
 sample
     :: MonadRandom m
-    => Object         -- ^ World.
-    -> m Ray          -- ^ Target.
+    => Object         -- ^ World
+    -> m Ray
     -> m Color
 sample world mray = average <$> replicateM 100 (bounce world mray)

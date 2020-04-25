@@ -11,10 +11,9 @@ import Lux.Vector (Vector (..), unit)
 
 
 data Color = Color
-    { cR :: {-# UNPACK #-} !Double
-    , rG :: {-# UNPACK #-} !Double
-    , rB :: {-# UNPACK #-} !Double
-    }
+    {-# UNPACK #-} !Double
+    {-# UNPACK #-} !Double
+    {-# UNPACK #-} !Double
 
 -- Operators
 
@@ -58,4 +57,4 @@ blue = Color 0.5 0.7 1
 sky :: Vector -> Color
 sky d = (1 - t) *^ white `plus` t *^ blue
   where
-    t = (vY (unit d) + 1) / 2
+    t = let Vector _ y _ = unit d in (y + 1) / 2

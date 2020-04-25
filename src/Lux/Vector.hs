@@ -11,11 +11,9 @@ module Lux.Vector
 
 
 data Vector = Vector
-    { vX :: {-# UNPACK #-} !Double
-    , vY :: {-# UNPACK #-} !Double
-    , vZ :: {-# UNPACK #-} !Double
-    }
-    deriving (Eq, Read, Show)
+    {-# UNPACK #-} !Double
+    {-# UNPACK #-} !Double
+    {-# UNPACK #-} !Double
 
 infixr 5 `cross`, `dot`
 infixr 6 `plus`
