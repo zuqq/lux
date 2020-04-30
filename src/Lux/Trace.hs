@@ -2,71 +2,16 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Lux.Trace
-    ( lambSphere
-    , metalSphere
-    , sample
+    ( sample
     ) where
 
-import Control.Applicative        ((<|>))
 import Control.Monad              (replicateM)
 import Control.Monad.Random.Class (MonadRandom, getRandomR)
 
 import Lux.Color  (Color, average, black, mix, sky)
-import Lux.Types  (Hit (..), Object (..), Ray (..), Sphere (..))
-import Lux.Vector ((*^), (/^), Vector (..), dot, minus, plus)
+import Lux.Types  (Hit (..), Object (..), Ray (..))
+import Lux.Vector (Vector (..))
 
-
--- Spheres
-
-at :: Ray -> Double -> Vector
-at Ray {..} t = rOrigin `plus` t *^ rDirection
-
-time :: Sphere -> Ray -> Maybe Double
-time Sphere {..} Ray {..} =
-    let oc = rOrigin `minus` sCenter
-        a  = dot rDirection rDirection
-        b  = dot oc rDirection
-        c  = dot oc oc - sRadius * sRadius
-        disc = b * b - a * c
-    in safeSqrt disc >>= \root ->
-        let t  = (-b - root) / a
-            t' = (-b + root) / a
-        in safeTime t <|> safeTime t'
-  where
-    safeSqrt x
-        | x < 0     = Nothing
-        | otherwise = Just $ sqrt x
-    safeTime t
-        | t < 0.001 = Nothing
-        | otherwise = Just t
-
-normal :: Sphere -> Vector -> Vector
-normal Sphere {..} p = (p `minus` sCenter) /^ sRadius
-
-lambSphere :: Sphere -> Color -> Object
-lambSphere sphere color = Object $ \ray -> do
-    t <- time sphere ray
-    let p = ray `at` t
-    Just . Hit t $ \u -> Ray
-        { rColor     = mix (rColor ray) color
-        , rOrigin    = p
-        , rDirection = normal sphere p `plus` u
-        }
-
-reflect :: Vector -> Vector -> Vector
-reflect n v = v `minus` (2 *^ dot n v *^ n)
-
-metalSphere :: Sphere -> Color -> Object
-metalSphere sphere color = Object $ \ray -> do
-    t <- time sphere ray
-    let p = ray `at` t
-    Just . Hit t $ const Ray
-        { rColor     = mix (rColor ray) color
-        , rOrigin    = p
-        , rDirection = reflect (normal sphere p) (rDirection ray)
-        }
-
--- Ray tracing
 
 randUnit :: MonadRandom m => m Vector
 randUnit = do

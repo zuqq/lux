@@ -5,8 +5,8 @@ import Data.Foldable (traverse_)
 
 import Lux.Color  (Color (..))
 import Lux.Render (Picture (..), header, render, serialize)
-import Lux.Trace  (lambSphere, metalSphere)
-import Lux.Types  (Sphere (..), fromList)
+import Lux.Sphere (Sphere (..), lambSphere, metalSphere)
+import Lux.Types  (fromList)
 import Lux.Vector (Vector (..))
 
 

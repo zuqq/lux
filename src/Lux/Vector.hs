@@ -6,6 +6,7 @@ module Lux.Vector
     , dot
     , minus
     , plus
+    , reflect
     , unit
     ) where
 
@@ -53,3 +54,6 @@ unit :: Vector -> Vector
 unit v = v /^ len v
   where
     len v = sqrt $ dot v v
+
+reflect :: Vector -> Vector -> Vector
+reflect n v = v `minus` (2 *^ dot n v *^ n)

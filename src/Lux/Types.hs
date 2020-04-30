@@ -1,13 +1,15 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Lux.Types
     ( Hit (..)
     , Object (..)
     , Ray (..)
-    , Sphere (..)
+    , at
     , fromList
     ) where
 
 import Lux.Color  (Color)
-import Lux.Vector (Vector)
+import Lux.Vector ((*^), Vector, plus)
 
 
 data Ray = Ray
@@ -15,6 +17,9 @@ data Ray = Ray
     , rOrigin    :: !Vector
     , rDirection :: !Vector
     }
+
+at :: Ray -> Double -> Vector
+at Ray {..} t = rOrigin `plus` t *^ rDirection
 
 data Hit = Hit
     { hTime    :: !Double
@@ -28,8 +33,3 @@ newtype Object = Object { hit :: Ray -> Maybe Hit }
 
 fromList :: [Object] -> Object
 fromList objs = Object $ \ray -> foldMap (`hit` ray) objs
-
-data Sphere = Sphere
-    { sCenter :: !Vector
-    , sRadius :: !Double
-    }
