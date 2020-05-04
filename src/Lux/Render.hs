@@ -7,12 +7,12 @@ module Lux.Render
     , serialize
     ) where
 
-import Control.Monad.Random.Class (MonadRandom, getRandom)
+import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
 
 import Lux.Color  (Color (..), white)
 import Lux.Trace  (sample)
 import Lux.Types  (Object, Ray (..))
-import Lux.Vector ((*^), (/^), Vector, cross, minus, plus, unit)
+import Lux.Vector ((*^), (/^), Vector (..), cross, len, minus, plus, unit)
 
 
 -- | Newline-terminated PPM header.
@@ -26,30 +26,46 @@ serialize :: Color -> String
 serialize (Color r g b) = unwords $ show . floor . (255.99 *) <$> [r, g, b]
 
 data Picture = Picture
-    { pCenter :: !Vector
-    , pFocus  :: !Vector  -- ^ Focal point.
+    { pLens   :: !Vector  -- ^ Center of the lens.
+    , pFocus  :: !Vector  -- ^ Center of the focal plane.
     , pUp     :: !Vector
     , pAngle  :: !Double  -- ^ Angle of view.
     , pWidth  :: !Int     -- ^ Width in pixels.
     , pHeight :: !Int     -- ^ Height in pixels.
+    , pApert  :: !Double
     }
 
+randPolar
+    :: MonadRandom m
+    => Double         -- ^ Radius of the closed disk to pick from.
+    -> m Vector
+randPolar maxRadius = do
+    a <- getRandomR (0, 2 * pi)
+    r <- getRandomR (0, maxRadius)
+    return $ Vector (r * cos a) (r * sin a) 0
+
 shoot
-    :: Picture
+    :: MonadRandom m
+    => Picture
     -> (Double, Double)  -- Coordinates of the point in fractional pixels.
-    -> Ray
-shoot Picture {..} (fCol, fRow) = Ray white (pCenter `plus` ez) $
-    origin `plus` x *^ ex `plus` y *^ ey
+    -> m Ray
+shoot Picture {..} (fCol, fRow) = do
+    Vector dx dy _ <- randPolar (pApert / 2)
+    let offset = dx *^ ex `plus` dy *^ ey
+    return . Ray white (pLens `plus` offset) $
+        (corner `plus` x *^ ex `plus` y *^ ey) `minus` offset
   where
     a /. b  = a / fromIntegral b
     a ./. b = fromIntegral a / fromIntegral b
 
-    height = 2 * tan (pAngle / 2)
+    d      = pLens `minus` pFocus
+    ez     = unit d
+    z      = len d
+    height = 2 * z * tan (pAngle / 2)
     width  = pWidth ./. pHeight * height
-    ez     = unit (pCenter `minus` pFocus)
-    ex     = unit (cross pUp ez)
+    ex     = unit $ cross pUp ez
     ey     = cross ez ex
-    origin = (width *^ ex `plus` height *^ ey) /^ (-2) `minus` ez
+    corner = (width *^ ex `plus` height *^ ey) /^ (-2) `minus` d
     x      = fCol /. pWidth * width
     y      = fRow /. pHeight * height
 
@@ -62,6 +78,6 @@ render
 render picture world (col, row) = sample world $ do
     dx <- getRandom
     dy <- getRandom
-    return $ shoot picture (col .+ dx, row .+ dy)
+    shoot picture (col .+ dx, row .+ dy)
   where
     (.+) = (+) . fromIntegral

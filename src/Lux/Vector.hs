@@ -4,6 +4,7 @@ module Lux.Vector
     , Vector (..)
     , cross
     , dot
+    , len
     , minus
     , plus
     , unit
@@ -49,7 +50,8 @@ dot (Vector x y z) (Vector x' y' z') = x * x' + y * y' + z * z'
 (/^) :: Vector -> Double -> Vector
 (/^) (Vector x y z) a = Vector (x / a) (y / a) (z / a)
 
+len :: Vector -> Double
+len v = sqrt $ dot v v
+
 unit :: Vector -> Vector
 unit v = v /^ len v
-  where
-    len v = sqrt $ dot v v
