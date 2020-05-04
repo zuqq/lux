@@ -6,7 +6,7 @@ module Lux.Trace
     ) where
 
 import Control.Monad              (replicateM)
-import Control.Monad.Random.Class (MonadRandom, getRandomR)
+import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
 
 import Lux.Color  (Color, average, black, mix, sky)
 import Lux.Types  (Hit (..), Object (..), Ray (..))
@@ -31,7 +31,7 @@ bounce world = go 50
         then return $ mix rColor black
         else case hit world ray of
             Nothing        -> return $ mix rColor (sky rDirection)
-            Just (Hit _ f) -> go (k - 1) (f <$> randUnit)
+            Just (Hit _ f) -> go (k - 1) (f <$> randUnit <*> getRandom)
 
 sample
     :: MonadRandom m

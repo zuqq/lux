@@ -23,7 +23,7 @@ at Ray {..} t = rOrigin `plus` t *^ rDirection
 
 data Hit = Hit
     { hTime    :: !Double
-    , hScatter :: !(Vector -> Ray)
+    , hScatter :: !(Vector -> Double -> Ray)
     }
 
 instance Semigroup Hit where
