@@ -47,9 +47,10 @@ randPolar maxRadius = do
 shoot
     :: MonadRandom m
     => Picture
-    -> (Double, Double)  -- Coordinates of the point in fractional pixels.
+    -> Double            -- ^ Row in fractional pixels
+    -> Double            -- ^ Column in fractional pixels
     -> m Ray
-shoot Picture {..} (fCol, fRow) = do
+shoot Picture {..} fRow fCol = do
     Vector dx dy _ <- randPolar (pApert / 2)
     let offset = dx *^ ex `plus` dy *^ ey
     return . Ray white (pLens `plus` offset) $
@@ -73,11 +74,12 @@ render
     :: MonadRandom m
     => Picture
     -> Object          -- ^ World
-    -> (Int, Int)      -- ^ (Column, Row)
+    -> Int             -- ^ Row
+    -> Int             -- ^ Column
     -> m Color
-render picture world (col, row) = sample world $ do
+render picture world row col = sample world $ do
     dx <- getRandom
     dy <- getRandom
-    shoot picture (col .+ dx, row .+ dy)
+    shoot picture (row .+ dy) (col .+ dx)
   where
     (.+) = (+) . fromIntegral

@@ -54,10 +54,10 @@ refract
     -> Vector  -- ^ Unit vector to reflect.
     -> Double  -- ^ Quotient of the refractive indices.
     -> Vector
-refract n v e = a `minus` b
+refract n v ix = par `plus` perp
   where
-    a = e *^ (v `minus` dot v n *^ n)
-    b = sqrt (1 - dot a a) *^ n
+    par  = ix *^ (v `minus` dot v n *^ n)
+    perp = (-sqrt (1 - dot par par)) *^ n
 
 -- | A solid glass sphere.
 glassSphere
@@ -79,7 +79,7 @@ glassSphere sphere ix = Object $ \ray -> do
     return . Hit t $ \_ x -> Ray
         { rColor     = rColor ray
         , rOrigin    = p
-        -- Reflect with probability f or if Snell's law doesn't apply.
+        -- Reflect with probability @f@ or if Snell's law doesn't apply.
         , rDirection = if x < f || ix' * sqrt (1 - u ^ 2) > 1
             then reflect n' v
             else refract n' v ix'

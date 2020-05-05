@@ -1,32 +1,41 @@
+{-# LANGUAGE RecordWildCards #-}
+
 module Main (main) where
 
 import Control.Monad ((>=>))
-import Data.Foldable (traverse_)
+import Data.Foldable (for_)
+import System.IO     (hPutStrLn, stderr)
 
 import Lux.Color  (Color (..))
 import Lux.Render (Picture (..), header, render, serialize)
-import Lux.Sphere (Sphere (..), lambSphere, metalSphere)
+import Lux.Sphere (Sphere (..), glassSphere, lambSphere, metalSphere)
 import Lux.Types  (fromList)
 import Lux.Vector (Vector (..))
 
 
 main :: IO ()
-main = putStr (header w h) >>
-    traverse_ (render picture world >=> putStrLn . serialize)
-        [ (col, row) | row <- [h - 1, h - 2..0], col <- [0..w - 1] ]
+main = do
+    let Picture {..} = picture
+    putStr (header pWidth pHeight)
+    for_ [pHeight - 1, pHeight - 2..0] $ \row -> do
+        hPutStrLn stderr $ "On row " <> show row
+        for_ [0..pWidth - 1] $
+            render picture world row >=> serialize >>> putStrLn
   where
-    w = 800
-    h = 400
+    (>>>) = flip (.)
+
     picture = Picture
-        { pCenter = Vector 0 1 1
-        , pFocus  = Vector 0 0 (-1)
+        { pLens   = Vector 4 2 4
+        , pFocus  = Vector 0 1 0
         , pUp     = Vector 0 1 0
         , pAngle  = pi / 4
-        , pWidth  = w
-        , pHeight = h
+        , pWidth  = 800
+        , pHeight = 400
+        , pApert  = 0.1
         }
     world = fromList
-        [ metalSphere (Sphere (Vector (-0.5) 0 (-1)) 0.5) (Color 0.8 0.6 0.2)
-        , metalSphere (Sphere (Vector 0.5 0 (-1)) 0.5) (Color 0.8 0.8 0.8)
-        , lambSphere (Sphere (Vector 0 (-100.5) (-1)) 100) (Color 0.8 0.8 0)
+        [ lambSphere (Sphere (Vector 0 (-1000) 0) 1000) (Color 0.5 0.5 0.5)
+        , lambSphere (Sphere (Vector 0 1 (-2)) 1) (Color 0.4 0.2 0.1)
+        , glassSphere (Sphere (Vector 0 1 0) 1) 1.5
+        , metalSphere (Sphere (Vector 0 1 2) 1) (Color 0.7 0.6 0.5)
         ]
