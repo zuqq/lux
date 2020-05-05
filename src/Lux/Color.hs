@@ -1,21 +1,19 @@
 module Lux.Color
-    ( Color (..)
-    , average
+    ( (*^)
+    , (/^)
+    , Color (..)
     , black
+    , blue
     , mix
-    , sky
+    , plus
     , white
     ) where
-
-import Lux.Vector (Vector (..), unit)
 
 
 data Color = Color
     {-# UNPACK #-} !Double
     {-# UNPACK #-} !Double
     {-# UNPACK #-} !Double
-
--- Operators
 
 infixr 6 `plus`
 infixr 7 *^, `mix`
@@ -35,15 +33,6 @@ plus (Color r g b) (Color r' g' b') = Color (r + r') (g + g') (b + b')
 mix :: Color -> Color -> Color
 mix (Color r g b) (Color r' g' b') = Color (r * r') (g * g') (b * b')
 
--- | Channel-wise arithmetic mean of a list of colors.
-average :: [Color] -> Color
-average [] = black
-average cs = foldr plus black cs /^ length' cs
-  where
-    length' = fromIntegral . length
-
--- Constants
-
 black :: Color
 black = Color 0 0 0
 
@@ -52,9 +41,3 @@ white = Color 1 1 1
 
 blue :: Color
 blue = Color 0.5 0.7 1
-
--- | Linear white-to-blue gradient.
-sky :: Vector -> Color
-sky d = (1 - t) *^ white `plus` t *^ blue
-  where
-    t = let Vector _ y _ = unit d in (y + 1) / 2

@@ -8,10 +8,16 @@ module Lux.Trace
 import Control.Monad              (replicateM)
 import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
 
-import Lux.Color  (Color, average, black, mix, sky)
+import Lux.Color  ((*^), (/^), Color, black, blue, mix, plus, white)
 import Lux.Types  (Hit (..), Object (..), Ray (..))
-import Lux.Vector (Vector (..))
+import Lux.Vector (Vector (..), unit)
 
+
+-- | Linear white-to-blue gradient.
+sky :: Vector -> Color
+sky d = (1 - t) *^ white `plus` t *^ blue
+  where
+    t = let Vector _ y _ = unit d in (y + 1) / 2
 
 randUnit :: MonadRandom m => m Vector
 randUnit = do
@@ -38,4 +44,8 @@ sample
     => Object         -- ^ World
     -> m Ray
     -> m Color
-sample world mray = average <$> replicateM 100 (bounce world mray)
+sample world mray = go 100 $ return black
+  where
+    go k !acc = if k <= 0
+        then (/^ 100) <$> acc
+        else go (k - 1) $ plus <$> acc <*> bounce world mray
