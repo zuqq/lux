@@ -1,8 +1,8 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Lux.Types
-    ( Hit (..)
-    , Object (..)
+    ( Hit
+    , Object
     , Ray (..)
     , at
     , fromList

@@ -47,8 +47,8 @@ randPolar maxRadius = do
 shoot
     :: MonadRandom m
     => Picture
-    -> Double            -- ^ Row in fractional pixels
-    -> Double            -- ^ Column in fractional pixels
+    -> Double            -- ^ Row in fractional pixels.
+    -> Double            -- ^ Column in fractional pixels.
     -> m Ray
 shoot Picture {..} fRow fCol = do
     Vector dx dy _ <- randPolar (pApert / 2)

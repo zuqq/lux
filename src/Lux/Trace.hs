@@ -7,16 +7,10 @@ module Lux.Trace
 
 import Control.Monad.Random.Class (MonadRandom)
 
-import Lux.Color  ((*^), (/^), Color, black, blue, mix, plus, white)
-import Lux.Types  (Hit (..), Object, Ray (..))
-import Lux.Vector (Vector (..), len, unit)
+import Lux.Color  ((/^), Color, black, plus)
+import Lux.Types  (Hit, Object, Ray (..))
+import Lux.Vector (len)
 
-
--- | Linear white-to-blue gradient.
-sky :: Vector -> Color
-sky d = (1 - t) *^ white `plus` t *^ blue
-  where
-    t = let Vector _ y _ = unit d in (y + 1) / 2
 
 bounce
     :: MonadRandom m

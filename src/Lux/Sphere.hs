@@ -12,7 +12,7 @@ import Control.Applicative        ((<|>))
 import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
 
 import Lux.Color  (Color, mix)
-import Lux.Types  (Hit (..), Object (..), Ray (..), at)
+import Lux.Types  (Hit, Object, Ray (..), at)
 import Lux.Vector ((*^), (/^), Vector (..), dot, minus, plus, unit)
 
 
@@ -68,7 +68,7 @@ refract n v ix = par `plus` perp
 glass
     :: MonadRandom m
     => Sphere
-    -> Double  -- ^ Refractive index.
+    -> Double         -- ^ Refractive index.
     -> Object m
 glass sphere ix ray = do
     t <- time sphere ray
