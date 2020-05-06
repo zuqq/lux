@@ -73,7 +73,7 @@ shoot Picture {..} fRow fCol = do
 render
     :: MonadRandom m
     => Picture
-    -> Object          -- ^ World
+    -> Object m        -- ^ World
     -> Int             -- ^ Row
     -> Int             -- ^ Column
     -> m Color

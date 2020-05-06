@@ -5,11 +5,10 @@ module Lux.Trace
     ( sample
     ) where
 
-import Control.Monad              (replicateM)
-import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
+import Control.Monad.Random.Class (MonadRandom)
 
 import Lux.Color  ((*^), (/^), Color, black, blue, mix, plus, white)
-import Lux.Types  (Hit (..), Object (..), Ray (..))
+import Lux.Types  (Hit (..), Object, Ray (..))
 import Lux.Vector (Vector (..), unit)
 
 
@@ -19,29 +18,22 @@ sky d = (1 - t) *^ white `plus` t *^ blue
   where
     t = let Vector _ y _ = unit d in (y + 1) / 2
 
-randUnit :: MonadRandom m => m Vector
-randUnit = do
-    a <- getRandomR (0, 2 * pi)
-    z <- getRandomR (-1, 1)
-    let r = sqrt $ 1 - z * z
-    return $ Vector (r * cos a) (r * sin a) z
-
 bounce
     :: MonadRandom m
-    => Object         -- ^ World
+    => Object m       -- ^ World
     -> m Ray
     -> m Color
 bounce world = go 50
   where
     go k !acc = acc >>= \ray@Ray {..} -> if k <= 0
         then return $ mix rColor black
-        else case hit world ray of
-            Nothing        -> return $ mix rColor (sky rDirection)
-            Just (Hit _ f) -> go (k - 1) (f <$> randUnit <*> getRandom)
+        else case world ray of
+            Nothing           -> return $ mix rColor (sky rDirection)
+            Just (Hit _ mray) -> go (k - 1) mray
 
 sample
     :: MonadRandom m
-    => Object         -- ^ World
+    => Object m       -- ^ World
     -> m Ray
     -> m Color
 sample world mray = go 100 $ return black

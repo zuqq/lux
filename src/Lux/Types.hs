@@ -21,15 +21,15 @@ data Ray = Ray
 at :: Ray -> Double -> Vector
 at Ray {..} t = rOrigin `plus` t *^ rDirection
 
-data Hit = Hit
+data Hit m = Hit
     { hTime    :: !Double
-    , hScatter :: !(Vector -> Double -> Ray)
+    , hScatter :: !(m Ray)
     }
 
-instance Semigroup Hit where
+instance Semigroup (Hit m) where
     h <> h' = if hTime h < hTime h' then h else h'
 
-newtype Object = Object { hit :: Ray -> Maybe Hit }
+type Object m = Ray -> Maybe (Hit m)
 
-fromList :: [Object] -> Object
-fromList objs = Object $ \ray -> foldMap (`hit` ray) objs
+fromList :: [Object m] -> Object m
+fromList objs ray = foldMap ($ ray) objs

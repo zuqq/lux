@@ -2,20 +2,24 @@
 
 module Lux.Sphere
     ( Sphere (..)
-    , glassSphere
-    , lambSphere
-    , metalSphere
+    , diffuse
+    , glass
+    , metal
     ) where
 
-import Control.Applicative ((<|>))
+import Control.Applicative        ((<|>))
+import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
 
 import Lux.Color  (Color, mix)
 import Lux.Types  (Hit (..), Object (..), Ray (..), at)
-import Lux.Vector ((*^), (/^), Vector, dot, minus, plus, unit)
+import Lux.Vector ((*^), (/^), Vector (..), dot, minus, plus, unit)
 
 
--- | Data type describing an abstract sphere; passed to the constructors for the
--- actual 'Object's.
+infixr 2 <&>
+
+(<&>) :: Functor f => f a -> (a -> b) -> f b
+(<&>) = flip fmap
+
 data Sphere = Sphere
     { sCenter :: !Vector
     , sRadius :: !Double
@@ -60,11 +64,12 @@ refract n v ix = par `plus` perp
     perp = (-sqrt (1 - dot par par)) *^ n
 
 -- | A solid glass sphere.
-glassSphere
-    :: Sphere
+glass
+    :: MonadRandom m
+    => Sphere
     -> Double  -- ^ Refractive index.
-    -> Object
-glassSphere sphere ix = Object $ \ray -> do
+    -> Object m
+glass sphere ix ray = do
     t <- time sphere ray
     let p = ray `at` t
         n = normal sphere p
@@ -76,7 +81,7 @@ glassSphere sphere ix = Object $ \ray -> do
         u  = - dot v n'
         f0 = (ix' - 1) ^ 2 / (ix' + 1) ^ 2
         f  = f0 + (1 - f0) * (1 - u) ^ 5
-    return . Hit t $ \_ x -> Ray
+    return . Hit t $ getRandom <&> \x -> Ray
         { rColor     = rColor ray
         , rOrigin    = p
         -- Reflect with probability @f@ or if Snell's law doesn't apply.
@@ -85,23 +90,30 @@ glassSphere sphere ix = Object $ \ray -> do
             else refract n' v ix'
         }
 
+randUnit :: MonadRandom m => m Vector
+randUnit = do
+    a <- getRandomR (0, 2 * pi)
+    z <- getRandomR (-1, 1)
+    let r = sqrt $ 1 - z * z
+    return $ Vector (r * cos a) (r * sin a) z
+
 -- | A diffuse sphere.
-lambSphere :: Sphere -> Color -> Object
-lambSphere sphere color = Object $ \ray -> do
+diffuse :: MonadRandom m => Sphere -> Color -> Object m
+diffuse sphere color ray = do
     t <- time sphere ray
     let p = ray `at` t
-    return . Hit t $ \u _ -> Ray
+    return . Hit t $ randUnit <&> \u -> Ray
         { rColor     = mix (rColor ray) color
         , rOrigin    = p
         , rDirection = normal sphere p `plus` u
         }
 
 -- | A smooth metal sphere.
-metalSphere :: Sphere -> Color -> Object
-metalSphere sphere color = Object $ \ray -> do
+metal :: Monad m => Sphere -> Color -> Object m
+metal sphere color ray = do
     t <- time sphere ray
     let p = ray `at` t
-    return . Hit t $ \_ _ -> Ray
+    return . Hit t $ return Ray
         { rColor     = mix (rColor ray) color
         , rOrigin    = p
         , rDirection = reflect (normal sphere p) (rDirection ray)
