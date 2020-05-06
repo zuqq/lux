@@ -8,7 +8,7 @@ import System.IO     (hPutStrLn, stderr)
 
 import Lux.Color  (Color (..))
 import Lux.Render (Picture (..), header, render, serialize)
-import Lux.Sphere (Sphere (..), diffuse, glass, metal)
+import Lux.Sphere (Sphere (..), diffuse, glass, light, metal)
 import Lux.Types  (fromList)
 import Lux.Vector (Vector (..))
 
@@ -38,4 +38,7 @@ main = do
         , diffuse (Sphere (Vector 0 1 (-2)) 1) (Color 0.4 0.2 0.1)
         , glass (Sphere (Vector 0 1 0) 1) 1.5
         , metal (Sphere (Vector 0 1 2) 1) (Color 0.7 0.6 0.5)
+        , light (Sphere (Vector 0 5 2) 1) (Color 1 1 1)
+        , light (Sphere (Vector (-5) 5 2) 1) (Color 1 1 1)
+        , light (Sphere (Vector 5 5 2) 1) (Color 1 1 1)
         ]

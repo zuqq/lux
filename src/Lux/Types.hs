@@ -21,13 +21,10 @@ data Ray = Ray
 at :: Ray -> Double -> Vector
 at Ray {..} t = rOrigin `plus` t *^ rDirection
 
-data Hit m = Hit
-    { hTime    :: !Double
-    , hScatter :: !(m Ray)
-    }
+data Hit m = Hit !Double !(m Ray)
 
 instance Semigroup (Hit m) where
-    h <> h' = if hTime h < hTime h' then h else h'
+    h@(Hit t _) <> h'@(Hit t' _) = if t < t' then h else h'
 
 type Object m = Ray -> Maybe (Hit m)
 

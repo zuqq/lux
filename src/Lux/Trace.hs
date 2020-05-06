@@ -9,7 +9,7 @@ import Control.Monad.Random.Class (MonadRandom)
 
 import Lux.Color  ((*^), (/^), Color, black, blue, mix, plus, white)
 import Lux.Types  (Hit (..), Object, Ray (..))
-import Lux.Vector (Vector (..), unit)
+import Lux.Vector (Vector (..), len, unit)
 
 
 -- | Linear white-to-blue gradient.
@@ -25,11 +25,14 @@ bounce
     -> m Color
 bounce world = go 50
   where
-    go k !acc = acc >>= \ray@Ray {..} -> if k <= 0
-        then return $ mix rColor black
-        else case world ray of
-            Nothing           -> return $ mix rColor (sky rDirection)
-            Just (Hit _ mray) -> go (k - 1) mray
+    go k !acc = if k <= 0
+        then rColor <$> acc
+        else acc >>= \ray -> case world ray of
+            Nothing           -> return black
+            Just (Hit _ mray) -> mray >>= \Ray {..} ->
+                if len rDirection > 0
+                    then go (k - 1) mray
+                    else return rColor
 
 sample
     :: MonadRandom m

@@ -4,6 +4,7 @@ module Lux.Sphere
     ( Sphere (..)
     , diffuse
     , glass
+    , light
     , metal
     ) where
 
@@ -117,4 +118,15 @@ metal sphere color ray = do
         { rColor     = mix (rColor ray) color
         , rOrigin    = p
         , rDirection = reflect (normal sphere p) (rDirection ray)
+        }
+
+-- | A spherical light.
+light :: Monad m => Sphere -> Color -> Object m
+light sphere color ray = do
+    t <- time sphere ray
+    let p = ray `at` t
+    return . Hit t $ return Ray
+        { rColor     = color
+        , rOrigin    = p
+        , rDirection = Vector 0 0 0
         }
