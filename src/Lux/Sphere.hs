@@ -12,7 +12,7 @@ import Control.Applicative        ((<|>))
 import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
 
 import Lux.Color  (Color, mix)
-import Lux.Types  (Hit, Object, Ray (..), at)
+import Lux.Types  (Hit (..), Object, Ray (..), at)
 import Lux.Vector ((*^), (/^), Vector (..), dot, minus, plus, unit)
 
 
@@ -79,7 +79,7 @@ glass sphere ix ray = do
         -- ray is coming from the inside.
         (ix', n') = if dot v n > 0 then (ix, (-1) *^ n) else (1 / ix, n)
         -- Schlick approximation
-        u  = - dot v n'
+        u  = -dot v n'
         f0 = (ix' - 1) ^ 2 / (ix' + 1) ^ 2
         f  = f0 + (1 - f0) * (1 - u) ^ 5
     return . Hit t $ getRandom <&> \x -> Ray

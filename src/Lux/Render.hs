@@ -37,12 +37,12 @@ data Picture = Picture
 
 randPolar
     :: MonadRandom m
-    => Double         -- ^ Radius of the closed disk to pick from.
-    -> m Vector
+    => Double              -- ^ Radius of the closed disk to pick from.
+    -> m (Double, Double)
 randPolar maxRadius = do
     a <- getRandomR (0, 2 * pi)
     r <- getRandomR (0, maxRadius)
-    return $ Vector (r * cos a) (r * sin a) 0
+    return (r * cos a, r * sin a)
 
 shoot
     :: MonadRandom m
@@ -51,7 +51,7 @@ shoot
     -> Double            -- ^ Column in fractional pixels.
     -> m Ray
 shoot Picture {..} fRow fCol = do
-    Vector dx dy _ <- randPolar (pApert / 2)
+    (dx, dy) <- randPolar (pApert / 2)
     let offset = dx *^ ex `plus` dy *^ ey
     return . Ray white (pLens `plus` offset) $
         (corner `plus` x *^ ex `plus` y *^ ey) `minus` offset
