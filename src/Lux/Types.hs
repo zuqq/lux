@@ -2,7 +2,8 @@
 
 module Lux.Types
     ( Hit (..)
-    , Object
+    , Material (..)
+    , Object (..)
     , Ray (..)
     , at
     , fromList
@@ -21,12 +22,23 @@ data Ray = Ray
 at :: Ray -> Double -> Vector
 at Ray {..} t = rOrigin `plus` t *^ rDirection
 
-data Hit m = Hit !Double !(m Ray)
+data Material
+    = Dielectric !Double
+    | Diffuse    !Color
+    | Light      !Color
+    | Reflective !Color
 
-instance Semigroup (Hit m) where
-    h@(Hit t _) <> h'@(Hit t' _) = if t < t' then h else h'
+data Hit = Hit
+    { hTime     :: !Double
+    , hPoint    :: !Vector
+    , hNormal   :: !Vector
+    , hMaterial :: !Material
+    }
 
-type Object m = Ray -> Maybe (Hit m)
+instance Semigroup Hit where
+    h <> h' = if hTime h <= hTime h' then h else h'
 
-fromList :: [Object m] -> Object m
-fromList objs ray = foldMap ($ ray) objs
+newtype Object = Object { hit :: Ray -> Maybe Hit }
+
+fromList :: [Object] -> Object
+fromList objects = Object $ \ray -> foldMap (\x -> hit x ray) objects
