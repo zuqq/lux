@@ -45,8 +45,14 @@ time Sphere {..} Ray {..} =
         | t < 0.001 = Nothing
         | otherwise = Just t
 
-normal :: Sphere -> Vector -> Vector
-normal Sphere {..} p = (p `minus` sCenter) /^ sRadius
+normal
+    :: Sphere
+    -> Vector  -- ^ Direction of the incoming ray.
+    -> Vector  -- ^ Point of contact.
+    -> Vector
+normal Sphere {..} v p = unit $ if dot v n > 0 then (-1) *^ n else n
+  where
+    n = p `minus` sCenter
 
 reflect
     :: Vector  -- ^ Unit normal at the point of impact.
@@ -72,14 +78,12 @@ glass
     -> Object m
 glass sphere ix ray = do
     t <- time sphere ray
-    let p = ray `at` t
-        n = normal sphere p
-        v = unit (rDirection ray)
-        -- The vector @n@ always points outside, so we need to invert it if the
-        -- ray is coming from the inside.
-        (ix', n') = if dot v n > 0 then (ix, (-1) *^ n) else (1 / ix, n)
+    let p   = ray `at` t
+        v   = unit (rDirection ray)
+        n   = normal sphere v p
+        ix' = if dot v n > 0 then ix else 1 / ix
         -- Schlick approximation
-        u  = -dot v n'
+        u  = -dot v n
         f0 = (ix' - 1) ^ 2 / (ix' + 1) ^ 2
         f  = f0 + (1 - f0) * (1 - u) ^ 5
     return . Hit t $ getRandom <&> \x -> Ray
@@ -87,8 +91,8 @@ glass sphere ix ray = do
         , rOrigin    = p
         -- Reflect with probability @f@ or if Snell's law doesn't apply.
         , rDirection = if x < f || ix' * sqrt (1 - u ^ 2) > 1
-            then reflect n' v
-            else refract n' v ix'
+            then reflect n v
+            else refract n v ix'
         }
 
 randUnit :: MonadRandom m => m Vector
@@ -100,24 +104,24 @@ randUnit = do
 
 -- | A diffuse sphere.
 diffuse :: MonadRandom m => Sphere -> Color -> Object m
-diffuse sphere color ray = do
+diffuse sphere color ray@Ray {..} = do
     t <- time sphere ray
     let p = ray `at` t
     return . Hit t $ randUnit <&> \u -> Ray
-        { rColor     = mix (rColor ray) color
+        { rColor     = mix rColor color
         , rOrigin    = p
-        , rDirection = normal sphere p `plus` u
+        , rDirection = normal sphere rDirection p `plus` u
         }
 
 -- | A smooth metal sphere.
 metal :: Monad m => Sphere -> Color -> Object m
-metal sphere color ray = do
+metal sphere color ray@Ray {..} = do
     t <- time sphere ray
     let p = ray `at` t
     return . Hit t $ return Ray
-        { rColor     = mix (rColor ray) color
+        { rColor     = mix rColor color
         , rOrigin    = p
-        , rDirection = reflect (normal sphere p) (rDirection ray)
+        , rDirection = reflect (normal sphere rDirection p) rDirection
         }
 
 -- | A spherical light.
