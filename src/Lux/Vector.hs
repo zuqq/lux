@@ -15,6 +15,7 @@ data Vector = Vector
     {-# UNPACK #-} !Double
     {-# UNPACK #-} !Double
     {-# UNPACK #-} !Double
+    deriving Show
 
 infixr 5 `cross`, `dot`
 infixr 6 `plus`
@@ -34,9 +35,9 @@ minus (Vector x y z) (Vector x' y' z') = Vector (x - x') (y - y') (z - z')
 -- ==== __Examples__
 --
 -- >>> cross (Vector 1 0 0) (Vector 0 1 0)
--- Vector {vX = 0.0, vY = 0.0, vZ = 1.0}
+-- Vector 0.0 0.0 1.0
 -- >>> cross (Vector 1 2 3) (Vector (-7) 8 9)
--- Vector {vX = -6.0, vY = -30.0, vZ = 22.0}
+-- Vector (-6.0) (-30.0) 22.0
 cross :: Vector -> Vector -> Vector
 cross (Vector x y z) (Vector x' y' z') =
     Vector (y * z' - z * y') (z * x' - x * z') (x * y' - y * x')
