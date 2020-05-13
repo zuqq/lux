@@ -38,7 +38,7 @@ data Hit = Hit
 instance Semigroup Hit where
     h <> h' = if hTime h <= hTime h' then h else h'
 
-newtype Object = Object { hit :: Ray -> Maybe Hit }
+newtype Object = Object {hit :: Ray -> Maybe Hit}
 
 fromList :: [Object] -> Object
 fromList objects = Object $ \ray -> foldMap (\x -> hit x ray) objects

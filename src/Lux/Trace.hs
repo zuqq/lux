@@ -1,4 +1,4 @@
-{-# LANGUAGE BangPatterns    #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Lux.Trace
     ( sample
