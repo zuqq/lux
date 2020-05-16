@@ -4,7 +4,7 @@ module Lux.Trace
     ( sample
     ) where
 
-import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
+import Control.Monad.Random.Class (MonadRandom)
 
 import Lux.Color   ((/^), Color, black, plus)
 import Lux.Scatter (scatter)
@@ -12,7 +12,7 @@ import Lux.Types   (Object (..), Ray (..))
 
 
 bounce :: MonadRandom m => Object -> m Ray -> m Color
-bounce world = go 50
+bounce world = go (50 :: Int)
   where
     go k !acc = if k <= 0
         then rColor <$> acc
@@ -23,7 +23,7 @@ bounce world = go 50
                 Right mray -> go (k - 1) mray
 
 sample :: MonadRandom m => Object -> m Ray -> m Color
-sample world mray = go 100 $ return black
+sample world mray = go (100 :: Int) $ return black
   where
     go k !acc = if k <= 0
         then (/^ 100) <$> acc

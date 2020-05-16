@@ -24,7 +24,7 @@ header w h = unlines ["P3", show w <> " " <> show h, "255"]
 
 serialize :: Color -> String
 serialize (Color r g b) = unwords $
-    show . floor . (255.999 *) . (min 1) <$> [r, g, b]
+    show . (floor :: Double -> Int) . (255.999 *) . (min 1) <$> [r, g, b]
 
 data Picture = Picture
     { pLens   :: !Vector  -- ^ Center of the lens.

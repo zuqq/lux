@@ -8,7 +8,7 @@ module Lux.Sphere
 import Control.Applicative ((<|>))
 
 import Lux.Types  (Hit (..), Material, Object (..), Ray (..), at)
-import Lux.Vector ((*^), (/^), Vector (..), dot, minus, unit)
+import Lux.Vector ((*^), Vector (..), dot, minus, unit)
 
 
 data Sphere = Sphere

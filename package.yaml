@@ -14,15 +14,16 @@ dependencies:
 
 library:
   source-dirs: src
+  ghc-options:
+  - -O2
+  - -Wall
+  - -Werror
 
 executables:
   lux-exe:
     main:                Main.hs
     source-dirs:         app
     ghc-options:
-    - -Wall
-    - -Werror
-    - -O2
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
