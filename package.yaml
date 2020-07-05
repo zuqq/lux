@@ -32,9 +32,9 @@ executables:
     - lux
 
 tests:
-  lux-test:
-    main:                Spec.hs
-    source-dirs:         test
+  doctest:
+    main:                Main.hs
+    source-dirs:         doctest
     ghc-options:
     - -threaded
     - -rtsopts
