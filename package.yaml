@@ -1,12 +1,10 @@
-name:                lux
-version:             0.1.0.0
-github:              "zuqq/lux"
-author:              "zuqq <noahheld17@gmail.com>"
+name:    lux
+version: 0.1.0.0
+github:  "zuqq/lux"
+author:  "zuqq <noahheld17@gmail.com>"
 
 extra-source-files:
 - README.md
-
-description:         Please see the README on GitHub at <https://github.com/zuqq/lux#readme>
 
 dependencies:
 - base >= 4.7 && < 5
