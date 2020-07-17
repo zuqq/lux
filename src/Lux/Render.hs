@@ -53,21 +53,21 @@ shoot Picture {..} fRow fCol = do
     (dx, dy) <- randomPolar (pApert / 2)
     let offset = dx *^ ex `plus` dy *^ ey
     return . Ray white (pLens `plus` offset) $
-        (corner `plus` x *^ ex `plus` y *^ ey) `minus` offset
+        (c `plus` x *^ ex `plus` y *^ ey) `minus` offset
   where
     a /. b  = a / fromIntegral b
     a ./. b = fromIntegral a / fromIntegral b
 
-    d      = pLens `minus` pFocus
-    ez     = unit d
-    z      = len d
-    height = 2 * z * tan (pAngle / 2)
-    width  = pWidth ./. pHeight * height
-    ex     = unit $ cross pUp ez
-    ey     = cross ez ex
-    corner = (width *^ ex `plus` height *^ ey) /^ (-2) `minus` d
-    x      = fCol /. pWidth * width
-    y      = fRow /. pHeight * height
+    d  = pLens `minus` pFocus
+    ez = unit d
+    z  = len d
+    h  = 2 * z * tan (pAngle / 2)
+    w  = pWidth ./. pHeight * h
+    ex = unit $ cross pUp ez
+    ey = cross ez ex
+    c  = (w *^ ex `plus` h *^ ey) /^ (-2) `minus` d
+    x  = fCol /. pWidth * w
+    y  = fRow /. pHeight * h
 
 render
     :: Picture
