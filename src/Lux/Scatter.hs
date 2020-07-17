@@ -4,7 +4,7 @@ module Lux.Scatter
     ( scatter
     ) where
 
-import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
+import System.Random (randomIO, randomRIO)
 
 import Lux.Color  (Color, mix)
 import Lux.Types  (Hit (..), Material (..), Ray (..))
@@ -27,21 +27,20 @@ refract n v ix = par `plus` perp
     par  = ix *^ (v `minus` dot v n *^ n)
     perp = (-sqrt (1 - dot par par)) *^ n
 
-randUnit :: MonadRandom m => m Vector
-randUnit = do
-    a <- getRandomR (0, 2 * pi)
-    z <- getRandomR (-1, 1)
+randomUnit :: IO Vector
+randomUnit = do
+    a <- randomRIO (0, 2 * pi)
+    z <- randomRIO (-1, 1)
     let r = sqrt $ 1 - z * z
     return $ Vector (r * cos a) (r * sin a) z
 
 scatter
-    :: MonadRandom m
-    => Ray
+    :: Ray
     -> Hit
-    -> Either Color (m Ray)
+    -> Either Color (IO Ray)
 scatter Ray {..} Hit {..} = case hMaterial of
     Dielectric ix    -> Right $ do
-        x <- getRandom
+        x <- randomIO
         let v   = unit rDirection
             ix' = if dot v hNormal > 0 then ix else 1 / ix
             -- Schlick approximation.
@@ -57,7 +56,7 @@ scatter Ray {..} Hit {..} = case hMaterial of
                 else refract hNormal v ix'
             }
     Diffuse color    -> Right $ do
-        u <- randUnit
+        u <- randomUnit
         return Ray
             { rColor     = mix rColor color
             , rOrigin    = hPoint

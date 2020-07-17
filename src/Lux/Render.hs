@@ -7,7 +7,7 @@ module Lux.Render
     , serialize
     ) where
 
-import Control.Monad.Random.Class (MonadRandom, getRandom, getRandomR)
+import System.Random (randomIO, randomRIO)
 
 import Lux.Color  (Color (..), white)
 import Lux.Trace  (sample)
@@ -36,23 +36,21 @@ data Picture = Picture
     , pApert  :: !Double
     }
 
-randPolar
-    :: MonadRandom m
-    => Double              -- ^ Radius of the closed disk to pick from.
-    -> m (Double, Double)
-randPolar maxRadius = do
-    a <- getRandomR (0, 2 * pi)
-    r <- getRandomR (0, maxRadius)
+randomPolar
+    :: Double              -- ^ Radius of the closed disk to pick from.
+    -> IO (Double, Double)
+randomPolar maxRadius = do
+    a <- randomRIO (0, 2 * pi)
+    r <- randomRIO (0, maxRadius)
     return (r * cos a, r * sin a)
 
 shoot
-    :: MonadRandom m
-    => Picture
+    :: Picture
     -> Double            -- ^ Row in fractional pixels.
     -> Double            -- ^ Column in fractional pixels.
-    -> m Ray
+    -> IO Ray
 shoot Picture {..} fRow fCol = do
-    (dx, dy) <- randPolar (pApert / 2)
+    (dx, dy) <- randomPolar (pApert / 2)
     let offset = dx *^ ex `plus` dy *^ ey
     return . Ray white (pLens `plus` offset) $
         (corner `plus` x *^ ex `plus` y *^ ey) `minus` offset
@@ -72,15 +70,14 @@ shoot Picture {..} fRow fCol = do
     y      = fRow /. pHeight * height
 
 render
-    :: MonadRandom m
-    => Picture
+    :: Picture
     -> Object          -- ^ World
     -> Int             -- ^ Row
     -> Int             -- ^ Column
-    -> m Color
+    -> IO Color
 render picture world row col = sample world $ do
-    dx <- getRandom
-    dy <- getRandom
+    dx <- randomIO
+    dy <- randomIO
     shoot picture (row .+ dy) (col .+ dx)
   where
     (.+) = (+) . fromIntegral
