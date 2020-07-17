@@ -15,12 +15,12 @@ import Lux.Types  (Object, Ray (..))
 import Lux.Vector ((*^), (/^), Vector (..), cross, len, minus, plus, unit)
 
 
--- | Newline-terminated PPM header.
+-- | Plain PPM header, see <http://netpbm.sourceforge.net/doc/ppm.html>.
 header
     :: Int     -- ^ Width
     -> Int     -- ^ Height
     -> String
-header w h = unlines ["P3", show w <> " " <> show h, "255"]
+header w h = unwords ["P3", show w, show h, "255"]
 
 serialize :: Color -> String
 serialize (Color r g b) = unwords $

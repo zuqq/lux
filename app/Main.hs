@@ -16,7 +16,7 @@ import Lux.Vector (Vector (..))
 main :: IO ()
 main = do
     let Picture {..} = picture
-    putStr (header pWidth pHeight)
+    putStrLn (header pWidth pHeight)
     for_ [pHeight - 1, pHeight - 2..0] $ \row -> do
         hPutStrLn stderr $ "On row " <> show row
         for_ [0..pWidth - 1] $
