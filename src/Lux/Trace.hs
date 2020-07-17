@@ -6,8 +6,7 @@ module Lux.Trace
     ) where
 
 import Lux.Color   ((*^), (/^), Color, black, navy, mix, plus, white)
-import Lux.Scatter (scatter)
-import Lux.Types   (Object (..), Ray (..))
+import Lux.Types   (Action (..), Hit (..), Object, Ray (..))
 import Lux.Vector  (Vector (Vector), unit)
 
 
@@ -22,11 +21,11 @@ bounce world = go (50 :: Int)
   where
     go k !acc = if k <= 0
         then rColor <$> acc
-        else acc >>= \ray @ Ray {..} -> case hit world ray of
-            Nothing -> return $ mix rColor (sky rDirection)
-            Just h  -> case scatter ray h of
-                Left color -> return color
-                Right mray -> go (k - 1) mray
+        else acc >>= \ray @ Ray {..} -> case world ray of
+            Nothing        -> return $ mix rColor (sky rDirection)
+            Just (Hit _ a) -> case a of
+                Emit color   -> return color
+                Scatter mray -> go (k - 1) mray
 
 sample :: Object -> IO Ray -> IO Color
 sample world mray = go (100 :: Int) $ return black
