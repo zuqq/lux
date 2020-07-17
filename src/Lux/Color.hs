@@ -3,8 +3,8 @@ module Lux.Color
     , (/^)
     , Color (..)
     , black
-    , blue
     , mix
+    , navy
     , plus
     , white
     ) where
@@ -39,5 +39,6 @@ black = Color 0 0 0
 white :: Color
 white = Color 1 1 1
 
-blue :: Color
-blue = Color 0.5 0.7 1
+-- | PANTONE 276 C
+navy :: Color
+navy = Color 0.125 0.11 0.243
