@@ -4,7 +4,6 @@ module Lux.Types
     ( Action (..)
     , Hit (..)
     , Material
-    , Normal (..)
     , Object
     , Ray (..)
     , at
@@ -26,12 +25,12 @@ at Ray {..} t = rOrigin `plus` t *^ rDirection
 
 data Action = Emit !Color | Scatter !(IO Ray)
 
-data Normal = Normal
-    { nPoint  :: !Vector
-    , nVector :: !Vector
-    }
-
-type Material = Ray -> Normal -> Action
+type Material
+    =  Color   -- Color of the incoming ray.
+    -> Vector  -- Direction of the incoming ray.
+    -> Vector  -- Point of contact.
+    -> Vector  -- Surface normal.
+    -> Action
 
 data Hit = Hit !Double !Action
 

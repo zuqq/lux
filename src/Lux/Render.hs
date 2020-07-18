@@ -29,11 +29,11 @@ serialize (Color r g b) = unwords $
 data Picture = Picture
     { pLens   :: !Vector  -- ^ Center of the lens.
     , pFocus  :: !Vector  -- ^ Center of the focal plane.
-    , pUp     :: !Vector
+    , pUp     :: !Vector  -- ^ "Up" direction.
     , pAngle  :: !Double  -- ^ Angle of view.
     , pWidth  :: !Int     -- ^ Width in pixels.
     , pHeight :: !Int     -- ^ Height in pixels.
-    , pApert  :: !Double
+    , pApert  :: !Double  -- ^ Aperture.
     }
 
 randomPolar
@@ -46,8 +46,8 @@ randomPolar maxRadius = do
 
 shoot
     :: Picture
-    -> Double            -- ^ Row in fractional pixels.
-    -> Double            -- ^ Column in fractional pixels.
+    -> Double   -- ^ Row in fractional pixels.
+    -> Double   -- ^ Column in fractional pixels.
     -> IO Ray
 shoot Picture {..} fRow fCol = do
     (dx, dy) <- randomPolar (pApert / 2)
@@ -71,9 +71,9 @@ shoot Picture {..} fRow fCol = do
 
 render
     :: Picture
-    -> Object          -- ^ World
-    -> Int             -- ^ Row
-    -> Int             -- ^ Column
+    -> Object    -- ^ World
+    -> Int       -- ^ Row
+    -> Int       -- ^ Column
     -> IO Color
 render picture world row col = sample world $ do
     dx <- randomIO

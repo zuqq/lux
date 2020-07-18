@@ -8,7 +8,7 @@ module Lux.Sphere
 import Control.Applicative ((<|>))
 import Data.Functor        ((<&>))
 
-import Lux.Types  (Hit (..), Material, Normal (..), Object, Ray (..), at)
+import Lux.Types  (Hit (..), Material, Object, Ray (..), at)
 import Lux.Vector ((*^), Vector (..), dot, minus, unit)
 
 
@@ -38,14 +38,15 @@ time Sphere {..} Ray {..} =
 
 normal
     :: Sphere
-    -> Ray     -- ^ Incoming ray.
+    -> Vector  -- ^ Drection of the incoming ray.
     -> Vector  -- ^ Point of contact.
-    -> Normal
-normal Sphere {..} Ray {..} p = Normal p (unit (a *^ n))
+    -> Vector
+normal Sphere {..} v p = unit $ a *^ n
   where
     n = p `minus` sCenter
-    a = if dot rDirection n > 0 then (-1) else 1
+    a = if dot v n > 0 then (-1) else 1
 
 withMaterial :: Material -> Sphere -> Object
-withMaterial material sphere ray =
-    time sphere ray <&> \t -> Hit t (material ray (normal sphere ray (ray `at` t)))
+withMaterial material sphere ray @ Ray {..} =
+    time sphere ray <&> \t -> let p = ray `at` t
+        in Hit t (material rColor rDirection p (normal sphere rDirection p))
