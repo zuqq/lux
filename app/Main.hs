@@ -2,9 +2,9 @@
 
 module Main (main) where
 
-import Control.Monad ((>=>))
-import Data.Foldable (for_)
-import System.IO     (hPutStrLn, stderr)
+import Control.Monad.Random.Strict (evalRandIO)
+import Data.Foldable               (for_)
+import System.IO                   (hPutStrLn, stderr)
 
 import Lux.Color    (Color (..))
 import Lux.Render   (Picture (..), header, render, serialize)
@@ -20,11 +20,10 @@ main = do
     putStrLn (header pWidth pHeight)
     for_ [pHeight - 1, pHeight - 2..0] $ \row -> do
         hPutStrLn stderr $ "On row " <> show row
-        for_ [0..pWidth - 1] $
-            render picture world row >=> serialize >>> putStrLn
+        for_ [0..pWidth - 1] $ \col -> do
+            color <- evalRandIO (render picture world row col)
+            putStrLn . serialize $ color
   where
-    (>>>) = flip (.)
-
     picture = Picture
         { pLens   = Vector 4 2 4
         , pFocus  = Vector 0 1 0

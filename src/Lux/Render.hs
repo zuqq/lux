@@ -7,10 +7,9 @@ module Lux.Render
     , serialize
     ) where
 
-import System.Random (randomIO, randomRIO)
-
 import Lux.Color  (Color (..), white)
-import Lux.Trace  (sample)
+import Lux.Random (Random, sample)
+import Lux.Trace  (hit)
 import Lux.Types  (Object, Ray (..))
 import Lux.Vector ((*^), (/^), Vector (..), cross, len, minus, plus, unit)
 
@@ -36,24 +35,25 @@ data Picture = Picture
     , pApert  :: !Double  -- ^ Aperture.
     }
 
-randomPolar
-    :: Double              -- ^ Radius of the closed disk to pick from.
-    -> IO (Double, Double)
-randomPolar maxRadius = do
-    a <- randomRIO (0, 2 * pi)
-    r <- randomRIO (0, maxRadius)
+randPolar :: Double -> Random (Double, Double)
+randPolar maxRadius = do
+    a <- sample (0, 2 * pi)
+    r <- sample (0, maxRadius)
     return (r * cos a, r * sin a)
 
 shoot
     :: Picture
-    -> Double   -- ^ Row in fractional pixels.
-    -> Double   -- ^ Column in fractional pixels.
-    -> IO Ray
+    -> Double      -- ^ Row in fractional pixels.
+    -> Double      -- ^ Column in fractional pixels.
+    -> Random Ray
 shoot Picture {..} fRow fCol = do
-    (dx, dy) <- randomPolar (pApert / 2)
+    (dx, dy) <- randPolar (pApert / 2)
     let offset = dx *^ ex `plus` dy *^ ey
-    return . Ray white (pLens `plus` offset) $
-        (c `plus` x *^ ex `plus` y *^ ey) `minus` offset
+    return Ray
+        { rColor     = white
+        , rOrigin    = pLens `plus` offset
+        , rDirection = (c `plus` x *^ ex `plus` y *^ ey) `minus` offset
+        }
   where
     a /. b  = a / fromIntegral b
     a ./. b = fromIntegral a / fromIntegral b
@@ -71,13 +71,13 @@ shoot Picture {..} fRow fCol = do
 
 render
     :: Picture
-    -> Object    -- ^ World
-    -> Int       -- ^ Row
-    -> Int       -- ^ Column
-    -> IO Color
-render picture world row col = sample world $ do
-    dx <- randomIO
-    dy <- randomIO
+    -> Object        -- ^ World
+    -> Int           -- ^ Row
+    -> Int           -- ^ Column
+    -> Random Color
+render picture world row col = hit world $ do
+    dx <- sample (0, 1)
+    dy <- sample (0, 1)
     shoot picture (row .+ dy) (col .+ dx)
   where
     (.+) = (+) . fromIntegral

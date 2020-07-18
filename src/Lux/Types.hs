@@ -11,6 +11,7 @@ module Lux.Types
     ) where
 
 import Lux.Color  (Color)
+import Lux.Random (Random)
 import Lux.Vector ((*^), Vector, plus)
 
 
@@ -23,7 +24,7 @@ data Ray = Ray
 at :: Ray -> Double -> Vector
 at Ray {..} t = rOrigin `plus` t *^ rDirection
 
-data Action = Emit !Color | Scatter !(IO Ray)
+data Action = Emit !Color | Scatter !(Random Ray)
 
 type Material
     =  Color   -- Color of the incoming ray.

@@ -2,10 +2,11 @@
 {-# LANGUAGE RecordWildCards #-}
 
 module Lux.Trace
-    ( sample
+    ( hit
     ) where
 
 import Lux.Color   ((*^), (/^), Color, black, navy, mix, plus, white)
+import Lux.Random  (Random)
 import Lux.Types   (Action (..), Hit (..), Object, Ray (..))
 import Lux.Vector  (Vector (Vector), unit)
 
@@ -16,7 +17,7 @@ sky d = (1 - t) *^ white `plus` t *^ navy
   where
     t = let Vector _ y _ = unit d in (y + 1) / 2
 
-bounce :: Object -> IO Ray -> IO Color
+bounce :: Object -> Random Ray -> Random Color
 bounce world = go (50 :: Int)
   where
     go k !acc = if k <= 0
@@ -27,8 +28,8 @@ bounce world = go (50 :: Int)
                 Emit color   -> return color
                 Scatter mray -> go (k - 1) mray
 
-sample :: Object -> IO Ray -> IO Color
-sample world mray = go (100 :: Int) $ return black
+hit :: Object -> Random Ray -> Random Color
+hit world mray = go (100 :: Int) (return black)
   where
     go k !acc = if k <= 0
         then (/^ 100) <$> acc
