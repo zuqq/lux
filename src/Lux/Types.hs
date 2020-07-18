@@ -29,8 +29,8 @@ data Action = Emit !Color | Scatter !(Random Ray)
 type Material
     =  Color   -- Color of the incoming ray.
     -> Vector  -- Direction of the incoming ray.
-    -> Vector  -- Point of contact.
-    -> Vector  -- Surface normal.
+    -> Vector  -- Point of impact.
+    -> Vector  -- Unit normal at the point of impact.
     -> Action
 
 data Hit = Hit !Double !Action

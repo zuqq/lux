@@ -16,17 +16,17 @@ import Lux.Vector ((*^), Vector (..), dot, minus, plus, unit)
 
 
 reflect
-    :: Vector  -- ^ Unit normal at the point of impact.
-    -> Vector  -- ^ Unit vector to reflect.
+    :: Vector  -- ^ Unit vector to reflect.
+    -> Vector  -- ^ Unit normal at the point of impact.
     -> Vector
-reflect n v = v `minus` (2 *^ dot n v *^ n)
+reflect v n = v `minus` (2 *^ dot n v *^ n)
 
 refract
-    :: Vector  -- ^ Unit normal at the point of impact.
-    -> Vector  -- ^ Unit vector to reflect.
+    :: Vector  -- ^ Unit vector to reflect.
+    -> Vector  -- ^ Unit normal at the point of impact.
     -> Double  -- ^ Quotient of the refractive indices.
     -> Vector
-refract n v ix = par `plus` perp
+refract v n ix = par `plus` perp
   where
     par  = ix *^ (v `minus` dot v n *^ n)
     perp = (-sqrt (1 - dot par par)) *^ n
@@ -38,8 +38,8 @@ dielectric ix color (unit -> v) p n = Scatter $
         , rOrigin    = p
         -- Reflect with probability @f@ or if Snell's law doesn't apply.
         , rDirection = if x < f || ix' * sqrt (1 - u ^ (2 :: Int)) > 1
-            then reflect n v
-            else refract n v ix'
+            then reflect v n
+            else refract v n ix'
         }
   where
     ix' = if dot v n > 0 then ix else 1 / ix
@@ -71,5 +71,5 @@ reflective color color' (unit -> v) p n = Scatter $
     return Ray
         { rColor     = mix color color'
         , rOrigin    = p
-        , rDirection = reflect n v
+        , rDirection = reflect v n
         }

@@ -1,6 +1,8 @@
 {-# LANGUAGE RecordWildCards #-}
 
-module Main (main) where
+module Main
+    ( main
+    ) where
 
 import Control.Monad.Random.Strict (evalRandIO)
 import Data.Foldable               (for_)
@@ -17,11 +19,11 @@ import Lux.Vector   (Vector (..))
 main :: IO ()
 main = do
     let Picture {..} = picture
-    putStrLn (header pWidth pHeight)
+    putStrLn $ header pWidth pHeight
     for_ [pHeight - 1, pHeight - 2..0] $ \row -> do
         hPutStrLn stderr $ "On row " <> show row
         for_ [0..pWidth - 1] $ \col -> do
-            color <- evalRandIO (render picture world row col)
+            color <- evalRandIO $ render picture world row col
             putStrLn . serialize $ color
   where
     picture = Picture

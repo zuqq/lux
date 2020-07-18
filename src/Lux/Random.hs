@@ -3,9 +3,9 @@ module Lux.Random
     , sample
     ) where
 
-
 import Control.Monad.Random.Strict (Rand, liftRand)
 import System.Random               (StdGen, UniformRange, uniformR)
+
 
 type Random = Rand StdGen
 

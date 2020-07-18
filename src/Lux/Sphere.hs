@@ -38,8 +38,8 @@ time Sphere {..} Ray {..} =
 
 normal
     :: Sphere
-    -> Vector  -- ^ Drection of the incoming ray.
-    -> Vector  -- ^ Point of contact.
+    -> Vector  -- ^ Direction of the incoming ray.
+    -> Vector  -- ^ Point of impact.
     -> Vector
 normal Sphere {..} v p = unit $ a *^ n
   where
