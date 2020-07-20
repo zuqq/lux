@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Lux.Types
@@ -9,6 +10,8 @@ module Lux.Types
     , at
     , fromList
     ) where
+
+import Data.List (foldl')
 
 import Lux.Color  (Color)
 import Lux.Random (Random)
@@ -41,4 +44,6 @@ instance Semigroup Hit where
 type Object = Ray -> Maybe Hit
 
 fromList :: [Object] -> Object
-fromList objects ray = foldMap ($ ray) objects
+fromList objects ray = foldl' step Nothing objects
+  where
+    step mhit object = mhit <> object ray
