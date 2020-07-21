@@ -2,13 +2,13 @@
 
 module Lux.Sphere
     ( Sphere (..)
-    , withMaterial
+    , time
+    , normal
     ) where
 
 import Control.Applicative ((<|>))
-import Data.Functor        ((<&>))
 
-import Lux.Types  (Hit (..), Material, Object, Ray (..), at)
+import Lux.Ray    (Ray (..))
 import Lux.Vector ((*^), Vector (..), dot, minus, unit)
 
 
@@ -45,8 +45,3 @@ normal Sphere {..} v p = unit $ a *^ n
   where
     n = p `minus` sCenter
     a = if dot v n > 0 then (-1) else 1
-
-withMaterial :: Material -> Sphere -> Object
-withMaterial material sphere ray @ Ray {..} =
-    time sphere ray <&> \t -> let p = ray `at` t
-        in Hit t (material rColor rDirection p (normal sphere rDirection p))

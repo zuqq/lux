@@ -2,6 +2,5 @@ resolver: lts-15.8
 packages:
 - .
 extra-deps:
-- MonadRandom-0.5.2
 - random-1.2.0
 - splitmix-0.1
