@@ -14,9 +14,8 @@ import Data.Foldable (foldl')
 
 import System.Random (StdGen, uniformR)
 
-import Lux.Color    (Color (..), average, gradient, mix, navy, white)
+import Lux.Color    ((*~), (~+~), Color (..), black, gradient, mix, navy, white)
 import Lux.Material (Action (..), Material)
-import Lux.Pair     (Pair (..), strict)
 import Lux.Ray      (Ray (..), at)
 import Lux.Sphere   (Sphere, normal, time)
 import Lux.Vector   ((*^), Vector (..), cross, len, minus, plus, unit)
@@ -36,7 +35,8 @@ data Picture = Picture
 
 -- Camera ----------------------------------------------------------------------
 
-type Camera = (Int, Int) -> StdGen -> (Ray, StdGen)
+type Pixel  = (Int, Int)
+type Camera = Pixel -> StdGen -> (Ray, StdGen)
 
 -- | Offset for defocus blur.
 uniformPolar :: Double -> StdGen -> ((Double, Double), StdGen)
@@ -99,6 +99,11 @@ type Sky = Vector -> Color
 dusk :: Sky
 dusk (unit -> Vector _ y _) = gradient white navy $ (y + 1) / 2
 
+data Pair a b = Pair !a !b
+
+strict :: (a, b) -> Pair a b
+strict (x, y) = Pair x y
+
 bounce :: Object -> Ray -> StdGen -> (Color, StdGen)
 bounce world ray g = go (50 :: Int) (Pair ray g)
   where
@@ -110,7 +115,14 @@ bounce world ray g = go (50 :: Int) (Pair ray g)
                 Emit color -> (color, g')
                 Scatter f  -> go (k - 1) $! strict (f g')
 
-render :: Object -> Camera -> (Int, Int) -> StdGen -> (Color, StdGen)
+average :: Int -> (StdGen -> (Color, StdGen)) -> StdGen -> (Color, StdGen)
+average n f = go n . Pair black
+  where
+    go k (Pair c g) = if k <= 0
+        then ((1 / fromIntegral n) *~ c, g)
+        else go (k - 1) $! let (c', g') = f g in Pair (c ~+~ c') g'
+
+render :: Object -> Camera -> Pixel -> StdGen -> (Color, StdGen)
 render world camera pixel = average 100 $ \g ->
     let (ray, g') = camera pixel g
     in bounce world ray g'

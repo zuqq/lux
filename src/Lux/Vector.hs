@@ -1,6 +1,5 @@
 module Lux.Vector
     ( (*^)
-    , (/^)
     , Vector (..)
     , cross
     , dot
@@ -22,7 +21,6 @@ infixr 6 `plus`
 infixr 7 *^
 
 infixl 6 `minus`
-infixl 7 /^
 
 plus :: Vector -> Vector -> Vector
 plus (Vector x y z) (Vector x' y' z') = Vector (x + x') (y + y') (z + z')
@@ -48,11 +46,8 @@ dot (Vector x y z) (Vector x' y' z') = x * x' + y * y' + z * z'
 (*^) :: Double -> Vector -> Vector
 (*^) a (Vector x y z) = Vector (a * x) (a * y) (a * z)
 
-(/^) :: Vector -> Double -> Vector
-(/^) (Vector x y z) a = Vector (x / a) (y / a) (z / a)
-
 len :: Vector -> Double
 len v = sqrt $ dot v v
 
 unit :: Vector -> Vector
-unit v = v /^ len v
+unit v = (1 / len v) *^ v
