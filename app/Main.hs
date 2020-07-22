@@ -2,29 +2,14 @@ module Main
     ( main
     ) where
 
-import Data.Foldable (for_)
-import Data.IORef    (newIORef, readIORef, writeIORef)
-import System.IO     (hPutStrLn, stderr)
-
 import System.Random (getStdGen)
 
-import Lux.Color    (Color (..), gray, white)
+import Lux.Color    (Color (..))
 import Lux.Render   (Picture (..), fromList, fromPicture, render, withMaterial)
 import Lux.Material (dielectric, diffuse, light, reflective)
 import Lux.Sphere   (Sphere (..))
 import Lux.Vector   (Vector (..))
 
-
--- | Plain PPM header, see <http://netpbm.sourceforge.net/doc/ppm.html>.
-header
-    :: Int     -- ^ Width
-    -> Int     -- ^ Height
-    -> String
-header w h = unwords ["P3", show w, show h, "255"]
-
-serialize :: Color -> String
-serialize (Color r g b) = unwords $
-    show . (floor :: Double -> Int) . (255.999 *) <$> [r, g, b]
 
 main :: IO ()
 main = do
@@ -57,12 +42,18 @@ main = do
             }
         camera = fromPicture picture
 
-    putStrLn $ header w h
+    putStrLn $ unwords ["P3", show w, show h, "255"]
+
+    let serialize (Color r g b) = unwords $
+            show . (floor :: Double -> Int) . (255.999 *) <$> [r, g, b]
+
+    let go (i, j) g
+            | i < 0     = return ()
+            | j == w    = go (i - 1, 0) g
+            | otherwise = do
+                let (c, g') = render world camera (i, j) g
+                putStrLn . serialize $ c
+                go (i, j + 1) g'
+
     g <- getStdGen
-    v <- newIORef g
-    for_ [h - 1, h - 2..0] $ \i -> do
-        hPutStrLn stderr $ "On row " <> show i
-        for_ [0..w - 1] $ \j -> do
-            (color, g') <- render world camera (i, j) <$> readIORef v
-            putStrLn . serialize $ color
-            writeIORef v g'
+    go (h - 1, 0) g
