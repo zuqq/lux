@@ -1,5 +1,4 @@
 {-# LANGUAGE RecordWildCards #-}
-{-# LANGUAGE ViewPatterns    #-}
 
 module Lux.Render
     ( Picture (..)
@@ -14,7 +13,7 @@ import Data.Foldable (foldl')
 
 import System.Random (StdGen, uniformR)
 
-import Lux.Color    ((*~), (~+~), Color (..), black, gradient, mix, navy, white)
+import Lux.Color    ((*~), (~+~), Color (..), black, mix, white)
 import Lux.Material (Action (..), Material)
 import Lux.Ray      (Ray (..), at)
 import Lux.Sphere   (Sphere, normal, time)
@@ -96,18 +95,15 @@ withMaterial material sphere ray @ Ray {..} =
 
 type Sky = Vector -> Color
 
-dusk :: Sky
-dusk (unit -> Vector _ y _) = gradient white navy $ (y + 1) / 2
-
 data Pair a b = Pair !a !b
 
-bounce :: Object -> Ray -> StdGen -> (Color, StdGen)
-bounce world ray g = go (50 :: Int) (Pair ray g)
+bounce :: Object -> Sky -> Ray -> StdGen -> (Color, StdGen)
+bounce world sky ray g = go (50 :: Int) (Pair ray g)
   where
     go k (Pair ray' g') = if k <= 0
         then (rColor ray', g')
         else case world ray' of
-            Nothing        -> (rColor ray' `mix` dusk (rDirection ray'), g')
+            Nothing        -> (rColor ray' `mix` sky (rDirection ray'), g')
             Just (Hit _ a) -> case a of
                 Emit color -> (color, g')
                 Scatter f  -> go (k - 1) $! uncurry Pair (f g')
@@ -119,7 +115,7 @@ average n f = go n . Pair black
         then ((1 / fromIntegral n) *~ c, g)
         else go (k - 1) $! let (c', g') = f g in Pair (c ~+~ c') g'
 
-render :: Object -> Camera -> Pixel -> StdGen -> (Color, StdGen)
-render world camera pixel = average 100 $ \g ->
+render :: Object -> Sky -> Camera -> Pixel -> StdGen -> (Color, StdGen)
+render world sky camera pixel = average 100 $ \g ->
     let (ray, g') = camera pixel g
-    in bounce world ray g'
+    in bounce world sky ray g'

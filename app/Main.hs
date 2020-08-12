@@ -1,14 +1,16 @@
+{-# LANGUAGE ViewPatterns #-}
+
 module Main
     ( main
     ) where
 
 import System.Random (getStdGen)
 
-import Lux.Color    (Color (..))
+import Lux.Color    (Color (..), gradient, navy, white)
 import Lux.Render   (Picture (..), fromList, fromPicture, render, withMaterial)
 import Lux.Material (dielectric, diffuse, light, reflective)
 import Lux.Sphere   (Sphere (..))
-import Lux.Vector   (Vector (..))
+import Lux.Vector   (Vector (..), unit)
 
 
 main :: IO ()
@@ -46,11 +48,13 @@ main = do
     let serialize (Color r g b) = unwords $
             show . (truncate :: Double -> Int) . (255.999 *) <$> [r, g, b]
 
+    let dusk (unit -> Vector _ y _) = gradient white navy $ (y + 1) / 2
+
     let go (i, j) g
             | i < 0     = return ()
             | j == w    = go (i - 1, 0) g
             | otherwise = do
-                let (c, g') = render world camera (i, j) g
+                let (c, g') = render world dusk camera (i, j) g
                 putStrLn . serialize $ c
                 go (i, j + 1) g'
 
