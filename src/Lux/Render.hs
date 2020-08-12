@@ -25,12 +25,12 @@ import Lux.Vector   ((*^), Vector (..), cross, len, minus, plus, unit)
 
 data Picture = Picture
     { pLens   :: !Vector  -- ^ Center of the lens.
+    , pAngle  :: !Double  -- ^ Angle of view.
+    , pApert  :: !Double  -- ^ Aperture.
     , pFocus  :: !Vector  -- ^ Center of the focal plane.
     , pUp     :: !Vector  -- ^ "Up" direction.
-    , pAngle  :: !Double  -- ^ Angle of view.
     , pWidth  :: !Int     -- ^ Width in pixels.
     , pHeight :: !Int     -- ^ Height in pixels.
-    , pApert  :: !Double  -- ^ Aperture.
     }
 
 -- Camera ----------------------------------------------------------------------
@@ -101,9 +101,6 @@ dusk (unit -> Vector _ y _) = gradient white navy $ (y + 1) / 2
 
 data Pair a b = Pair !a !b
 
-strict :: (a, b) -> Pair a b
-strict (x, y) = Pair x y
-
 bounce :: Object -> Ray -> StdGen -> (Color, StdGen)
 bounce world ray g = go (50 :: Int) (Pair ray g)
   where
@@ -113,7 +110,7 @@ bounce world ray g = go (50 :: Int) (Pair ray g)
             Nothing        -> (rColor ray' `mix` dusk (rDirection ray'), g')
             Just (Hit _ a) -> case a of
                 Emit color -> (color, g')
-                Scatter f  -> go (k - 1) $! strict (f g')
+                Scatter f  -> go (k - 1) $! uncurry Pair (f g')
 
 average :: Int -> (StdGen -> (Color, StdGen)) -> StdGen -> (Color, StdGen)
 average n f = go n . Pair black

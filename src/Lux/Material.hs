@@ -19,10 +19,10 @@ import Lux.Vector ((*^), Vector (..), dot, minus, plus, unit)
 data Action = Emit !Color | Scatter !(StdGen -> (Ray, StdGen))
 
 type Material
-    =  Color   -- Color of the incoming ray.
-    -> Vector  -- Direction of the incoming ray.
-    -> Vector  -- Point of impact.
-    -> Vector  -- Unit normal at the point of impact.
+    =  Color   -- ^ Color of the incoming ray.
+    -> Vector  -- ^ Direction of the incoming ray.
+    -> Vector  -- ^ Point of impact.
+    -> Vector  -- ^ Unit normal at the point of impact.
     -> Action
 
 reflect

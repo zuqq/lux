@@ -31,21 +31,20 @@ main = do
             ]
         w = 800
         h = 400
-        picture = Picture
+        camera = fromPicture Picture
             { pLens   = Vector 4 2 4
+            , pAngle  = pi / 4
+            , pApert  = 0.1
             , pFocus  = Vector 0 1 0
             , pUp     = Vector 0 1 0
-            , pAngle  = pi / 4
             , pWidth  = w
             , pHeight = h
-            , pApert  = 0.1
             }
-        camera = fromPicture picture
 
     putStrLn $ unwords ["P3", show w, show h, "255"]
 
     let serialize (Color r g b) = unwords $
-            show . (floor :: Double -> Int) . (255.999 *) <$> [r, g, b]
+            show . (truncate :: Double -> Int) . (255.999 *) <$> [r, g, b]
 
     let go (i, j) g
             | i < 0     = return ()
