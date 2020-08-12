@@ -4,7 +4,10 @@ module Lux.Color
       Color (..)
     -- * Colors
     , black
+    , blue
+    , glacier
     , gray
+    , green
     , navy
     , white
     -- * Operators
@@ -36,6 +39,18 @@ white = Color 1 1 1
 -- | PANTONE 276 C
 navy :: Color
 navy = Color 0.125 0.11 0.243
+
+-- | PANTONE 2707 C
+blue :: Color
+blue = Color 0.765 0.843 0.933
+
+-- | PANTONE 15-6437 TCX
+green :: Color
+green = Color 0.482 0.702 0.412
+
+-- | PANTONE Glacier Gray
+glacier :: Color
+glacier = Color 0.773 0.777 0.780
 
 -- Operators -------------------------------------------------------------------
 

@@ -6,9 +6,9 @@ module Main
 
 import System.Random (getStdGen)
 
-import Lux.Color    (Color (..), gradient, navy, white)
+import Lux.Color    (Color (..), blue, glacier, gradient, green, white)
 import Lux.Render   (Picture (..), fromList, fromPicture, render, withMaterial)
-import Lux.Material (dielectric, diffuse, light, reflective)
+import Lux.Material (dielectric, diffuse, reflective)
 import Lux.Sphere   (Sphere (..))
 import Lux.Vector   (Vector (..), unit)
 
@@ -16,27 +16,19 @@ import Lux.Vector   (Vector (..), unit)
 main :: IO ()
 main = do
     let world = fromList
-            [ withMaterial (diffuse (Color 0.5 0.5 0.5))
-                        (Sphere (Vector 0 (-1000) 0) 1000)
-            , withMaterial (diffuse (Color 0.4 0.2 0.1))
-                        (Sphere (Vector 0 1 (-2)) 1)
-            , withMaterial (dielectric 1.5)
-                        (Sphere (Vector 0 1 0) 1)
-            , withMaterial (reflective (Color 0.7 0.6 0.5))
-                        (Sphere (Vector 0 1 2) 1)
-            , withMaterial (light (Color 1 1 1))
-                        (Sphere (Vector 0 5 2) 1)
-            , withMaterial (light (Color 1 1 1))
-                        (Sphere (Vector (-5) 5 2) 1)
-            , withMaterial (light (Color 1 1 1))
-                        (Sphere (Vector 5 5 2) 1)
+            [ withMaterial (reflective glacier)
+                (Sphere (Vector (-1) 0.5 (-3)) 0.5)
+            , withMaterial (reflective glacier)
+                (Sphere (Vector 0 0.5 0) 0.5)
+            , withMaterial (diffuse green)
+                (Sphere (Vector 0 (-100) 0) 100)
             ]
-        w = 800
+        w = 400
         h = 400
         camera = fromPicture Picture
-            { pLens   = Vector 4 2 4
+            { pLens   = Vector 0 2 3
             , pAngle  = pi / 4
-            , pApert  = 0.1
+            , pApert  = 0.25
             , pFocus  = Vector 0 1 0
             , pUp     = Vector 0 1 0
             , pWidth  = w
@@ -48,13 +40,13 @@ main = do
     let serialize (Color r g b) = unwords $
             show . (truncate :: Double -> Int) . (255.999 *) <$> [r, g, b]
 
-    let dusk (unit -> Vector _ y _) = gradient white navy $ (y + 1) / 2
+    let sky (unit -> Vector _ y _) = gradient white blue $ (y + 1) / 2
 
     let go (i, j) g
             | i < 0     = return ()
             | j == w    = go (i - 1, 0) g
             | otherwise = do
-                let (c, g') = render world dusk camera (i, j) g
+                let (c, g') = render world sky camera (i, j) g
                 putStrLn . serialize $ c
                 go (i, j + 1) g'
 
