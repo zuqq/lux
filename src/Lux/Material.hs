@@ -41,7 +41,7 @@ refract v n ix =
     in par `plus` (-sqrt (1 - dot par par)) *^ n
 
 dielectric :: Double -> Material
-dielectric ix color (unit -> v) p n = Scatter $ \g ->
+dielectric ix c (unit -> v) p n = Scatter $ \g ->
     let ix' = if dot v n > 0 then ix else 1 / ix
         -- Schlick approximation.
         u   = -dot v n
@@ -52,7 +52,7 @@ dielectric ix color (unit -> v) p n = Scatter $ \g ->
         v'  = if x < f || ix' * sqrt (1 - u ^ (2 :: Int)) > 1
             then reflect v n
             else refract v n ix'
-    in (Ray color p v', g')
+    in (Ray c p v', g')
 
 randUnit :: StdGen -> (Vector, StdGen)
 randUnit g =
@@ -62,13 +62,13 @@ randUnit g =
     in (Vector (r * cos a) (r * sin a) z, g'')
 
 diffuse :: Color -> Material
-diffuse color color' _ p n = Scatter $ \g ->
+diffuse c c' _ p n = Scatter $ \g ->
     let (u, g') = randUnit g
-    in (Ray (mix color color') p (n `plus` u), g')
+    in (Ray (mix c c') p (n `plus` u), g')
 
 light :: Color -> Material
-light color _ _ _ _ = Emit color
+light c _ _ _ _ = Emit c
 
 reflective :: Color -> Material
-reflective color color' (unit -> v) p n = Scatter . (,) $
-    Ray (mix color color') p (reflect v n)
+reflective c c' (unit -> v) p n = Scatter . (,) $
+    Ray (mix c c') p (reflect v n)

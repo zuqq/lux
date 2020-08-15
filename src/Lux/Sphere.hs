@@ -13,16 +13,16 @@ import Lux.Vector ((*^), Vector (..), dot, minus, unit)
 
 
 data Sphere = Sphere
-    { sCenter :: !Vector
-    , sRadius :: !Double
+    { center :: !Vector
+    , radius :: !Double
     }
 
 time :: Sphere -> Ray -> Maybe Double
 time Sphere {..} Ray {..} =
-    let oc = rOrigin `minus` sCenter
-        a  = dot rDirection rDirection
-        b  = dot oc rDirection
-        c  = dot oc oc - sRadius * sRadius
+    let oc = origin `minus` center
+        a  = dot direction direction
+        b  = dot oc direction
+        c  = dot oc oc - radius * radius
         disc = b * b - a * c
     in safeSqrt disc >>= \root ->
         let t  = (-b - root) / a
@@ -43,5 +43,5 @@ normal
     -> Vector
 normal Sphere {..} v p = unit $ a *^ n
   where
-    n = p `minus` sCenter
+    n = p `minus` center
     a = if dot v n > 0 then (-1) else 1

@@ -88,8 +88,8 @@ withMaterial :: Material -> Sphere -> Object
 withMaterial material sphere ray @ Ray {..} =
     time sphere ray <&> \t ->
         let p = ray `at` t
-            n = normal sphere rDirection p
-        in Hit t (material rColor rDirection p n)
+            n = normal sphere direction p
+        in Hit t (material color direction p n)
 
 -- Render ----------------------------------------------------------------------
 
@@ -101,12 +101,12 @@ bounce :: Object -> Sky -> Ray -> StdGen -> (Color, StdGen)
 bounce world sky ray g = go (50 :: Int) (Pair ray g)
   where
     go k (Pair ray' g') = if k <= 0
-        then (rColor ray', g')
+        then (color ray', g')
         else case world ray' of
-            Nothing        -> (rColor ray' `mix` sky (rDirection ray'), g')
+            Nothing        -> (color ray' `mix` sky (direction ray'), g')
             Just (Hit _ a) -> case a of
-                Emit color -> (color, g')
-                Scatter f  -> go (k - 1) $! uncurry Pair (f g')
+                Emit c    -> (c, g')
+                Scatter f -> go (k - 1) $! uncurry Pair (f g')
 
 average :: Int -> (StdGen -> (Color, StdGen)) -> StdGen -> (Color, StdGen)
 average n f = go n . Pair black

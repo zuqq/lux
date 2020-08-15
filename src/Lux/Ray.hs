@@ -8,9 +8,9 @@ import Lux.Vector ((*^), Vector, plus)
 
 
 data Ray = Ray
-    { rColor     :: {-# UNPACK #-} !Color
-    , rOrigin    :: {-# UNPACK #-} !Vector
-    , rDirection :: {-# UNPACK #-} !Vector
+    { color     :: {-# UNPACK #-} !Color
+    , origin    :: {-# UNPACK #-} !Vector
+    , direction :: {-# UNPACK #-} !Vector
     }
 
 at :: Ray -> Double -> Vector
