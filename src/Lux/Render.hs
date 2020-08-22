@@ -92,14 +92,14 @@ withMaterial material sphere ray @ Ray {..} =
             n = normal sphere direction p
         in Hit t (material color direction p n)
 
--- Render ----------------------------------------------------------------------
+-- Tracing ---------------------------------------------------------------------
 
 type Sky = Vector -> Color
 
 data Pair a b = Pair !a !b
 
-bounce :: Object -> Sky -> Ray -> StdGen -> (Color, StdGen)
-bounce world sky ray g = go (50 :: Int) (Pair ray g)
+trace :: Object -> Sky -> Ray -> StdGen -> (Color, StdGen)
+trace world sky ray g = go (50 :: Int) (Pair ray g)
   where
     go k (Pair ray' g') = if k <= 0
         then (color ray', g')
@@ -116,6 +116,8 @@ average n f = go n . Pair black
         then ((1 / fromIntegral n) *~ c, g)
         else go (k - 1) $! let (c', g') = f g in Pair (c ~+~ c') g'
 
+-- Scene -----------------------------------------------------------------------
+
 data Scene = Scene
     { world  :: Object
     , sky    :: Sky
@@ -125,4 +127,4 @@ data Scene = Scene
 render :: Scene -> Pixel -> StdGen -> (Color, StdGen)
 render Scene {..} pixel = average 100 $ \g ->
     let (ray, g') = camera pixel g
-    in bounce world sky ray g'
+    in trace world sky ray g'
