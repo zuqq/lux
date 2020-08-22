@@ -2,6 +2,7 @@
 
 module Lux.Render
     ( Picture (..)
+    , Scene (..)
     , fromList
     , fromPicture
     , render
@@ -115,7 +116,13 @@ average n f = go n . Pair black
         then ((1 / fromIntegral n) *~ c, g)
         else go (k - 1) $! let (c', g') = f g in Pair (c ~+~ c') g'
 
-render :: Object -> Sky -> Camera -> Pixel -> StdGen -> (Color, StdGen)
-render world sky camera pixel = average 100 $ \g ->
+data Scene = Scene
+    { world  :: Object
+    , sky    :: Sky
+    , camera :: Camera
+    }
+
+render :: Scene -> Pixel -> StdGen -> (Color, StdGen)
+render Scene {..} pixel = average 100 $ \g ->
     let (ray, g') = camera pixel g
     in bounce world sky ray g'

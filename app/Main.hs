@@ -1,4 +1,5 @@
-{-# LANGUAGE ViewPatterns #-}
+{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE ViewPatterns    #-}
 
 module Main
     ( main
@@ -7,7 +8,7 @@ module Main
 import System.Random (getStdGen)
 
 import Lux.Color    (Color (..), blue, glacier, gradient, green, white)
-import Lux.Render   (Picture (..), fromList, fromPicture, render, withMaterial)
+import Lux.Render
 import Lux.Material (dielectric, diffuse, reflective)
 import Lux.Sphere   (Sphere (..))
 import Lux.Vector   (Vector (..), unit)
@@ -23,6 +24,7 @@ main = do
             , withMaterial (diffuse green)
                 (Sphere (Vector 0 (-100) 0) 100)
             ]
+        sky (unit -> Vector _ y _) = gradient white blue $ (y + 1) / 2
         w = 400
         h = 400
         camera = fromPicture Picture
@@ -34,19 +36,19 @@ main = do
             , pWidth  = w
             , pHeight = h
             }
+        scene = Scene {..}
 
     putStrLn $ unwords ["P3", show w, show h, "255"]
 
     let serialize (Color r g b) = unwords $
             show . (truncate :: Double -> Int) . (255.999 *) <$> [r, g, b]
 
-    let sky (unit -> Vector _ y _) = gradient white blue $ (y + 1) / 2
 
     let go (i, j) g
             | i < 0     = return ()
             | j == w    = go (i - 1, 0) g
             | otherwise = do
-                let (c, g') = render world sky camera (i, j) g
+                let (c, g') = render scene (i, j) g
                 putStrLn . serialize $ c
                 go (i, j + 1) g'
 
