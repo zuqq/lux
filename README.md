@@ -1,1 +1,3 @@
 # lux
+
+![sample](sample.png)
