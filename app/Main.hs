@@ -25,32 +25,31 @@ main = do
                 (Sphere (Vector 0 (-100) 0) 100)
             ]
         sky (unit -> Vector _ y _) = gradient white blue $ (y + 1) / 2
-        w = 400
-        h = 400
+        width  = 400
+        height = 400
         camera = fromPicture Picture
-            { pLens   = Vector 0 2 3
-            , pAngle  = pi / 4
-            , pApert  = 0.25
-            , pFocus  = Vector 0 1 0
-            , pUp     = Vector 0 1 0
-            , pWidth  = w
-            , pHeight = h
+            { lens   = Vector 0 2 3
+            , angle  = pi / 4
+            , apert  = 0.25
+            , focus  = Vector 0 1 0
+            , up     = Vector 0 1 0
+            , width  = width
+            , height = height
             }
         scene = Scene {..}
 
-    putStrLn $ unwords ["P3", show w, show h, "255"]
+    putStrLn $ unwords ["P3", show width, show height, "255"]
 
     let serialize (Color r g b) = unwords $
             show . (truncate :: Double -> Int) . (255.999 *) <$> [r, g, b]
 
-
     let go (i, j) g
-            | i < 0     = return ()
-            | j == w    = go (i - 1, 0) g
-            | otherwise = do
+            | i < 0      = return ()
+            | j == width = go (i - 1, 0) g
+            | otherwise  = do
                 let (c, g') = render scene (i, j) g
                 putStrLn . serialize $ c
                 go (i, j + 1) g'
 
     g <- getStdGen
-    go (h - 1, 0) g
+    go (height - 1, 0) g

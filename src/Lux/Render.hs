@@ -24,13 +24,13 @@ import Lux.Vector   ((*^), Vector (..), cross, len, minus, plus, unit)
 -- Picture ---------------------------------------------------------------------
 
 data Picture = Picture
-    { pLens   :: !Vector  -- ^ Center of the lens.
-    , pAngle  :: !Double  -- ^ Angle of view.
-    , pApert  :: !Double  -- ^ Aperture.
-    , pFocus  :: !Vector  -- ^ Center of the focal plane.
-    , pUp     :: !Vector  -- ^ "Up" direction.
-    , pWidth  :: !Int     -- ^ Width in pixels.
-    , pHeight :: !Int     -- ^ Height in pixels.
+    { lens   :: !Vector  -- ^ Center of the lens.
+    , angle  :: !Double  -- ^ Angle of view.
+    , apert  :: !Double  -- ^ Aperture.
+    , focus  :: !Vector  -- ^ Center of the focal plane.
+    , up     :: !Vector  -- ^ "Up" direction.
+    , width  :: !Int     -- ^ Width in pixels.
+    , height :: !Int     -- ^ Height in pixels.
     }
 
 -- Camera ----------------------------------------------------------------------
@@ -54,18 +54,18 @@ uniformCartesian g =
 
 fromPicture :: Picture -> Camera
 fromPicture Picture {..} =
-    let v = pLens `minus` pFocus
-        h = 2 * len v * tan (pAngle / 2)  -- Height of the screen.
-        s = h / fromIntegral pHeight      -- Side length of a pixel.
-        w = fromIntegral pWidth * s       -- Width of the screen.
+    let v = lens `minus` focus
+        h = 2 * len v * tan (angle / 2)  -- Height of the screen.
+        s = h / fromIntegral height      -- Side length of a pixel.
+        w = fromIntegral width * s       -- Width of the screen.
         z = unit v
-        x = cross (unit pUp) z
+        x = cross (unit up) z
         y = cross z x
-        o = pFocus `minus` (w / 2) *^ x `minus` (h / 2) *^ y
+        o = focus `minus` (w / 2) *^ x `minus` (h / 2) *^ y
     in \(i, j) g ->
-        let ((dx, dy), g')  = uniformPolar (pApert / 2) g
+        let ((dx, dy), g')  = uniformPolar (apert / 2) g
             ((di, dj), g'') = uniformCartesian g'
-            source = pLens `plus` dx *^ x `plus` dy *^ y
+            source = lens `plus` dx *^ x `plus` dy *^ y
             target = o
                 `plus` ((fromIntegral j + dj) * s) *^ x
                 `plus` ((fromIntegral i + di) * s) *^ y
