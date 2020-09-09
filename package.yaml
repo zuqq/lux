@@ -1,7 +1,7 @@
-name:    lux
+name: lux
 version: 0.1.0.0
-github:  "zuqq/lux"
-author:  "zuqq <noahheld17@gmail.com>"
+github: "zuqq/lux"
+author: "zuqq"
 
 extra-source-files:
 - README.md
@@ -22,8 +22,8 @@ library:
 
 executables:
   lux-exe:
-    main:                Main.hs
-    source-dirs:         app
+    main: Main.hs
+    source-dirs: app
     ghc-options:
     - -O2
     - -threaded
@@ -34,8 +34,8 @@ executables:
 
 tests:
   doctest:
-    main:                Main.hs
-    source-dirs:         doctest
+    main: Main.hs
+    source-dirs: doctest
     ghc-options:
     - -threaded
     - -rtsopts
