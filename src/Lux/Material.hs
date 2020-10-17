@@ -4,7 +4,6 @@ module Lux.Material
     ( Action (..)
     , Material
     , diffuse
-    , light
     , reflective
     ) where
 
@@ -41,9 +40,6 @@ diffuse :: Color -> Material
 diffuse c c' _ p n = Scatter $ \g ->
     let (u, g') = randUnit g
     in (Ray (mix c c') p (n `plus` u), g')
-
-light :: Color -> Material
-light c _ _ _ _ = Emit c
 
 reflective :: Color -> Material
 reflective c c' (unit -> v) p n = Scatter . (,) $
