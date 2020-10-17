@@ -3,7 +3,6 @@
 module Lux.Material
     ( Action (..)
     , Material
-    , dielectric
     , diffuse
     , light
     , reflective
@@ -30,29 +29,6 @@ reflect
     -> Vector  -- ^ Unit normal at the point of impact.
     -> Vector
 reflect v n = v `minus` (2 *^ dot n v *^ n)
-
-refract
-    :: Vector  -- ^ Unit vector to reflect.
-    -> Vector  -- ^ Unit normal at the point of impact.
-    -> Double  -- ^ Quotient of the refractive indices.
-    -> Vector
-refract v n ix =
-    let par = ix *^ (v `minus` dot v n *^ n)
-    in par `plus` (-sqrt (1 - dot par par)) *^ n
-
-dielectric :: Double -> Material
-dielectric ix c (unit -> v) p n = Scatter $ \g ->
-    let ix' = if dot v n > 0 then ix else 1 / ix
-        -- Schlick approximation.
-        u   = -dot v n
-        f0  = (ix' - 1) ^ (2 :: Int) / (ix' + 1) ^ (2 :: Int)
-        f   = f0 + (1 - f0) * (1 - u) ^ (5 :: Int)
-        (x, g') = uniformR (0, 1) g
-        -- Reflect with probability @f@ or if Snell's law doesn't apply.
-        v'  = if x < f || ix' * sqrt (1 - u ^ (2 :: Int)) > 1
-            then reflect v n
-            else refract v n ix'
-    in (Ray c p v', g')
 
 randUnit :: StdGen -> (Vector, StdGen)
 randUnit g =

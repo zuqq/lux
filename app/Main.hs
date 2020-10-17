@@ -9,7 +9,7 @@ import System.Random (getStdGen)
 
 import Lux.Color    (Color (..), blue, glacier, gradient, green, white)
 import Lux.Render
-import Lux.Material (dielectric, diffuse, reflective)
+import Lux.Material (diffuse, reflective)
 import Lux.Sphere   (Sphere (..))
 import Lux.Vector   (Vector (..), unit)
 
