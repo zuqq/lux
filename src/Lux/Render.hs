@@ -1,3 +1,4 @@
+{-# LANGUAGE BangPatterns    #-}
 {-# LANGUAGE RecordWildCards #-}
 
 module Lux.Render
@@ -96,25 +97,23 @@ withMaterial material sphere ray @ Ray {..} =
 
 type Sky = Vector -> Color
 
-data Pair a b = Pair !a !b
-
 trace :: Object -> Sky -> Ray -> StdGen -> (Color, StdGen)
-trace world sky ray g = go (50 :: Int) (Pair ray g)
+trace world sky = go (50 :: Int)
   where
-    go k (Pair ray' g') = if k <= 0
-        then (color ray', g')
-        else case world ray' of
-            Nothing        -> (color ray' `mix` sky (direction ray'), g')
+    go k ray g = if k <= 0
+        then (color ray, g)
+        else case world ray of
+            Nothing        -> (color ray `mix` sky (direction ray), g)
             Just (Hit _ a) -> case a of
-                Emit c    -> (c, g')
-                Scatter f -> go (k - 1) $! uncurry Pair (f g')
+                Emit c    -> (c, g)
+                Scatter f -> let (ray', g') = f g in go (k - 1) ray' g'
 
 average :: Int -> (StdGen -> (Color, StdGen)) -> StdGen -> (Color, StdGen)
-average n f = go n . Pair black
+average n f = go n black
   where
-    go k (Pair c g) = if k <= 0
+    go k !c g = if k <= 0
         then ((1 / fromIntegral n) *~ c, g)
-        else go (k - 1) $! let (c', g') = f g in Pair (c ~+~ c') g'
+        else let (c', g') = f g in go (k - 1) (c ~+~ c') g'
 
 -- Scene -----------------------------------------------------------------------
 
