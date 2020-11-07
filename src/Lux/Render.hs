@@ -1,59 +1,41 @@
-{-# LANGUAGE BangPatterns    #-}
-{-# LANGUAGE RecordWildCards #-}
+{-# LANGUAGE BangPatterns, RecordWildCards #-}
 
 module Lux.Render
-    ( Picture (..)
+    ( Frame
+    , Hit (..)
+    , Object
+    , Picture (..)
+    , Pixel
     , Scene (..)
+    , Sky
     , fromList
     , fromPicture
     , render
-    , withMaterial
     ) where
 
-import Data.Functor  ((<&>))
+import Control.Monad ((<=<))
 import Data.Foldable (foldl')
 
-import System.Random (StdGen, uniformR)
+import Lux.Color  ((*~), (~+~), Color (..), black, mix, white)
+import Lux.Random (Random, sampleDisk, sampleUnitSquare)
+import Lux.Ray    (Ray (..))
+import Lux.Vector ((*^), Vector (..), cross, len, minus, plus, unit)
 
-import Lux.Color    ((*~), (~+~), Color (..), black, mix, white)
-import Lux.Material (Material)
-import Lux.Ray      (Ray (..), at)
-import Lux.Sphere   (Sphere, normal, time)
-import Lux.Vector   ((*^), Vector (..), cross, len, minus, plus, unit)
-
-
--- Picture ---------------------------------------------------------------------
 
 data Picture = Picture
-    { lens   :: !Vector  -- ^ Center of the lens.
-    , angle  :: !Double  -- ^ Angle of view.
-    , apert  :: !Double  -- ^ Aperture.
-    , focus  :: !Vector  -- ^ Center of the focal plane.
-    , up     :: !Vector  -- ^ "Up" direction.
-    , width  :: !Int     -- ^ Width in pixels.
-    , height :: !Int     -- ^ Height in pixels.
+    { lens     :: !Vector  -- ^ Center of the lens.
+    , angle    :: !Double  -- ^ Angle of view.
+    , aperture :: !Double  -- ^ Aperture.
+    , focus    :: !Vector  -- ^ Center of the focal plane.
+    , up       :: !Vector  -- ^ "Up" direction.
+    , width    :: !Int     -- ^ Width in pixels.
+    , height   :: !Int     -- ^ Height in pixels.
     }
 
--- Camera ----------------------------------------------------------------------
+type Pixel = (Int, Int)
+type Frame = Pixel -> Random Ray
 
-type Pixel  = (Int, Int)
-type Camera = Pixel -> StdGen -> (Ray, StdGen)
-
--- | Offset for defocus blur.
-uniformPolar :: Double -> StdGen -> ((Double, Double), StdGen)
-uniformPolar maxRadius g =
-    let (a, g')  = uniformR (0, 2 * pi) g
-        (r, g'') = uniformR (0, maxRadius) g'
-    in ((r * cos a, r * sin a), g'')
-
--- | Offset for antialiasing.
-uniformCartesian :: StdGen -> ((Double, Double), StdGen)
-uniformCartesian g =
-    let (x, g')  = uniformR (0, 1) g
-        (y, g'') = uniformR (0, 1) g'
-    in ((x, y), g'')
-
-fromPicture :: Picture -> Camera
+fromPicture :: Picture -> Frame
 fromPicture Picture {..} =
     let v = lens `minus` focus
         h = 2 * len v * tan (angle / 2)  -- Height of the screen.
@@ -63,21 +45,19 @@ fromPicture Picture {..} =
         x = cross (unit up) z
         y = cross z x
         o = focus `minus` (w / 2) *^ x `minus` (h / 2) *^ y
-    in \(i, j) g ->
-        let ((dx, dy), g')  = uniformPolar (apert / 2) g
-            ((di, dj), g'') = uniformCartesian g'
-            source = lens `plus` dx *^ x `plus` dy *^ y
+    in \(i, j) -> do
+        (dx, dy) <- sampleDisk (aperture / 2)
+        (di, dj) <- sampleUnitSquare
+        let source = lens `plus` dx *^ x `plus` dy *^ y
             target = o
                 `plus` ((fromIntegral j + dj) * s) *^ x
                 `plus` ((fromIntegral i + di) * s) *^ y
-        in (Ray source (target `minus` source), g'')
+        pure $ Ray source (target `minus` source)
 
--- Object ----------------------------------------------------------------------
-
-data Hit = Hit !Double !(StdGen -> ((Color, Ray), StdGen))
+data Hit = Hit {-# UNPACK #-} !Double Color (Random Ray)
 
 instance Semigroup Hit where
-    h @ (Hit t _) <> h' @ (Hit t' _) = if t <= t' then h else h'
+    h @ (Hit t _ _) <> h' @ (Hit t' _ _) = if t <= t' then h else h'
 
 type Object = Ray -> Maybe Hit
 
@@ -86,44 +66,29 @@ fromList objects ray = foldl' step Nothing objects
   where
     step mhit object = mhit <> object ray
 
-withMaterial :: Material -> Sphere -> Object
-withMaterial material sphere ray @ Ray {..} =
-    time sphere ray <&> \t ->
-        let p = ray `at` t
-            n = normal sphere direction p
-        in Hit t (material direction p n)
-
--- Tracing ---------------------------------------------------------------------
-
 type Sky = Vector -> Color
 
-trace :: Object -> Sky -> Ray -> StdGen -> (Color, StdGen)
+trace :: Object -> Sky -> Ray -> Random Color
 trace world sky = go (50 :: Int) white
   where
-    go k !color ray g = if k <= 0
-        then (color, g)
-        else case world ray of
-            Nothing        -> (color `mix` sky (direction ray), g)
-            Just (Hit _ f) ->
-                let ((color', ray'), g') = f g
-                in go (k - 1) (color `mix` color') ray' g'
+    go k !c !r = if k <= 0
+        then pure c
+        else case world r of
+            Nothing -> pure (c `mix` sky (direction r))
+            Just (Hit _ a mr) -> mr >>= go (k - 1) (a `mix` c)
 
-average :: Int -> (StdGen -> (Color, StdGen)) -> StdGen -> (Color, StdGen)
-average n f = go n black
+average :: Int -> Random Color -> Random Color
+average n mc = go n black
   where
-    go k !c g = if k <= 0
-        then ((1 / fromIntegral n) *~ c, g)
-        else let (c', g') = f g in go (k - 1) (c ~+~ c') g'
-
--- Scene -----------------------------------------------------------------------
+    go k !c = if k <= 0
+        then pure $ (1 / fromIntegral n) *~ c
+        else mc >>= go (k - 1) . (c ~+~)
 
 data Scene = Scene
-    { world  :: Object
-    , sky    :: Sky
-    , camera :: Camera
+    { world :: Object
+    , sky   :: Sky
+    , frame :: Frame
     }
 
-render :: Scene -> Pixel -> StdGen -> (Color, StdGen)
-render Scene {..} pixel = average 100 $ \g ->
-    let (ray, g') = camera pixel g
-    in trace world sky ray g'
+render :: Scene -> Pixel -> Random Color
+render Scene {..} = average 100 . (trace world sky <=< frame)

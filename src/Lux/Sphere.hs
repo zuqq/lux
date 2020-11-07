@@ -38,10 +38,10 @@ time Sphere {..} Ray {..} =
 
 normal
     :: Sphere
-    -> Vector  -- ^ Direction of the incoming ray.
     -> Vector  -- ^ Point of impact.
+    -> Vector  -- ^ Direction of the incoming ray.
     -> Vector
-normal Sphere {..} v p = unit $ a *^ n
+normal Sphere {..} p v = unit $ a *^ n
   where
     n = p `minus` center
     a = if dot v n > 0 then (-1) else 1
