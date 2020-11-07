@@ -10,7 +10,7 @@ import System.Random (StdGen, uniformR)
 
 import Lux.Color  (Color)
 import Lux.Ray    (Ray (..))
-import Lux.Vector ((*^), Vector (..), dot, minus, plus, unit)
+import Lux.Vector (Vector (..), plus, reflect, unit)
 
 
 type Material
@@ -18,12 +18,6 @@ type Material
     -> Vector  -- ^ Point of impact.
     -> Vector  -- ^ Unit normal at the point of impact.
     -> StdGen -> ((Color, Ray), StdGen)
-
-reflect
-    :: Vector  -- ^ Unit vector to reflect.
-    -> Vector  -- ^ Unit normal at the point of impact.
-    -> Vector
-reflect v n = v `minus` (2 *^ dot n v *^ n)
 
 randUnit :: StdGen -> (Vector, StdGen)
 randUnit g =

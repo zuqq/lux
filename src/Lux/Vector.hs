@@ -6,6 +6,7 @@ module Lux.Vector
     , len
     , minus
     , plus
+    , reflect
     , unit
     ) where
 
@@ -51,3 +52,9 @@ len v = sqrt $ dot v v
 
 unit :: Vector -> Vector
 unit v = (1 / len v) *^ v
+
+reflect
+    :: Vector  -- ^ Unit vector to reflect.
+    -> Vector  -- ^ Unit normal at the point of impact.
+    -> Vector
+reflect v n = v `minus` (2 *^ dot n v *^ n)
