@@ -16,7 +16,7 @@ import Data.Foldable (foldl')
 import System.Random (StdGen, uniformR)
 
 import Lux.Color    ((*~), (~+~), Color (..), black, mix, white)
-import Lux.Material (Action (..), Material)
+import Lux.Material (Material)
 import Lux.Ray      (Ray (..), at)
 import Lux.Sphere   (Sphere, normal, time)
 import Lux.Vector   ((*^), Vector (..), cross, len, minus, plus, unit)
@@ -70,11 +70,11 @@ fromPicture Picture {..} =
             target = o
                 `plus` ((fromIntegral j + dj) * s) *^ x
                 `plus` ((fromIntegral i + di) * s) *^ y
-        in (Ray white source (target `minus` source), g'')
+        in (Ray source (target `minus` source), g'')
 
 -- Object ----------------------------------------------------------------------
 
-data Hit = Hit !Double !Action
+data Hit = Hit !Double !(StdGen -> ((Color, Ray), StdGen))
 
 instance Semigroup Hit where
     h @ (Hit t _) <> h' @ (Hit t' _) = if t <= t' then h else h'
@@ -91,22 +91,22 @@ withMaterial material sphere ray @ Ray {..} =
     time sphere ray <&> \t ->
         let p = ray `at` t
             n = normal sphere direction p
-        in Hit t (material color direction p n)
+        in Hit t (material direction p n)
 
 -- Tracing ---------------------------------------------------------------------
 
 type Sky = Vector -> Color
 
 trace :: Object -> Sky -> Ray -> StdGen -> (Color, StdGen)
-trace world sky = go (50 :: Int)
+trace world sky = go (50 :: Int) white
   where
-    go k ray g = if k <= 0
-        then (color ray, g)
+    go k !color ray g = if k <= 0
+        then (color, g)
         else case world ray of
-            Nothing        -> (color ray `mix` sky (direction ray), g)
-            Just (Hit _ a) -> case a of
-                Emit c    -> (c, g)
-                Scatter f -> let (ray', g') = f g in go (k - 1) ray' g'
+            Nothing        -> (color `mix` sky (direction ray), g)
+            Just (Hit _ f) ->
+                let ((color', ray'), g') = f g
+                in go (k - 1) (color `mix` color') ray' g'
 
 average :: Int -> (StdGen -> (Color, StdGen)) -> StdGen -> (Color, StdGen)
 average n f = go n black
