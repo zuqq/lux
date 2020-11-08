@@ -23,13 +23,13 @@ import Lux.Vector ((*^), Vector (..), cross, len, minus, plus, unit)
 
 
 data Picture = Picture
-    { lens     :: !Vector  -- ^ Center of the lens.
-    , angle    :: !Double  -- ^ Angle of view.
-    , aperture :: !Double
-    , focus    :: !Vector  -- ^ Center of the focal plane.
-    , up       :: !Vector  -- ^ "Up" direction.
-    , width    :: !Int     -- ^ Width in pixels.
-    , height   :: !Int     -- ^ Height in pixels.
+    { lens     :: Vector  -- ^ Center of the lens.
+    , angle    :: Double  -- ^ Angle of view.
+    , aperture :: Double
+    , focus    :: Vector  -- ^ Center of the focal plane.
+    , up       :: Vector  -- ^ "Up" direction.
+    , width    :: Int     -- ^ Width in pixels.
+    , height   :: Int     -- ^ Height in pixels.
     }
 
 type Pixel = (Int, Int)
