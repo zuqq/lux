@@ -25,7 +25,7 @@ import Lux.Vector ((*^), Vector (..), cross, len, minus, plus, unit)
 data Picture = Picture
     { lens     :: !Vector  -- ^ Center of the lens.
     , angle    :: !Double  -- ^ Angle of view.
-    , aperture :: !Double  -- ^ Aperture.
+    , aperture :: !Double
     , focus    :: !Vector  -- ^ Center of the focal plane.
     , up       :: !Vector  -- ^ "Up" direction.
     , width    :: !Int     -- ^ Width in pixels.
@@ -33,6 +33,14 @@ data Picture = Picture
     }
 
 type Pixel = (Int, Int)
+{-
+    Using existentials, we could get more general types like
+
+    > type Frame = forall m. MonadRandom m => Pixel -> m Ray
+
+    instead of the hard-coded 'Random' monad. I decided against it because that
+    seems like an awful lot of complexity for relatively little gain.
+-}
 type Frame = Pixel -> Random Ray
 
 fromPicture :: Picture -> Frame
@@ -46,6 +54,16 @@ fromPicture Picture {..} =
         y = cross z x
         o = focus `minus` (w / 2) *^ x `minus` (h / 2) *^ y
     in \(i, j) -> do
+        {-
+            There's randomness in two places:
+
+            * The source of the ray is drawn at random from a disk of diameter
+              'aperture' around the center of the lens in order to simulate
+              depth of field.
+
+            * The target of the ray is drawn at random from the pixel that we
+              are aiming at, for anti-aliasing purposes.
+        -}
         (dx, dy) <- sampleDisk (aperture / 2)
         (di, dj) <- sampleUnitSquare
         let source = lens `plus` dx *^ x `plus` dy *^ y
@@ -90,5 +108,17 @@ data Scene = Scene
     , frame :: Frame
     }
 
+{-
+    Note that
+
+    > average 100 . trace world sky <=< frame
+
+    would be wrong here. Indeed, since '(.)' binds more tightly than '(<=<)',
+    that's equivalent to
+
+    > (average 100 . trace world sky) <=< frame
+
+    which doesn't average over 'frame'.
+-}
 render :: Scene -> Pixel -> Random Color
 render Scene {..} = average 100 . (trace world sky <=< frame)

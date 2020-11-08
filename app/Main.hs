@@ -38,7 +38,7 @@ main = do
             show . (truncate :: Double -> Int) . (255.999 *) <$> [r, g, b]
 
     let go (i, j) x
-            | i < 0      = return ()
+            | i < 0      = pure ()
             | j == width = go (i - 1, 0) x
             | otherwise  = do
                 let Result c y = run (render scene (i, j)) x
