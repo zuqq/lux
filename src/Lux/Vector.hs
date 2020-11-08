@@ -53,8 +53,16 @@ len v = sqrt $ dot v v
 unit :: Vector -> Vector
 unit v = (1 / len v) *^ v
 
+-- | @reflect v n@ reflects @v@ at the surface normal @n@.
+--
+-- ==== __Examples__
+--
+-- >>> reflect (Vector 1 (-1) 0) (Vector 0 1 0)
+-- Vector 1.0 1.0 0.0
+-- >>> reflect (Vector 1 (-2) 0) (Vector 0 1 0)
+-- Vector 1.0 2.0 0.0
 reflect
-    :: Vector  -- ^ Unit vector to reflect.
+    :: Vector  -- ^ Vector to reflect.
     -> Vector  -- ^ Unit normal at the point of impact.
     -> Vector
 reflect v n = v `minus` (2 *^ dot n v *^ n)
