@@ -20,7 +20,7 @@ import Lux.Vector (Vector, plus, reflect)
 type Material
     =  Vector  -- ^ Point of impact.
     -> Vector  -- ^ Direction of the incoming ray.
-    -> Vector  -- ^ Surface normal at the point of impact.
+    -> Vector  -- ^ Unit normal at the point of impact.
     -> Random Ray
 
 diffuse :: Material

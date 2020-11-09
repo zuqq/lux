@@ -36,6 +36,7 @@ time Sphere {..} Ray {..} =
         | t < 0.001 = Nothing
         | otherwise = Just t
 
+-- | Unit normal at the point of impact, pointing in the same direction.
 normal
     :: Sphere
     -> Vector  -- ^ Point of impact.
