@@ -1,7 +1,7 @@
 # lux
 
-An implementation of [Ray Tracing in One Weekend][Shirley], in a purely
-functional style. Here's a simple example of what it can do:
+A purely functional implementation of [Ray Tracing in One Weekend][Shirley].
+Here's a simple example of what it can do:
 
 ![sample](sample.png)
 
