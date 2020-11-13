@@ -18,14 +18,10 @@ module Lux.Color
     ) where
 
 
--- Type ------------------------------------------------------------------------
-
 data Color = Color
     {-# UNPACK #-} !Double
     {-# UNPACK #-} !Double
     {-# UNPACK #-} !Double
-
--- Colors ----------------------------------------------------------------------
 
 black :: Color
 black = Color 0 0 0
@@ -51,8 +47,6 @@ green = Color 0.482 0.702 0.412
 -- | PANTONE Glacier Gray
 glacier :: Color
 glacier = Color 0.773 0.777 0.780
-
--- Operators -------------------------------------------------------------------
 
 infixr 6 ~+~
 infixr 7 *~, `mix`
