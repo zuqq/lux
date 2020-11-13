@@ -36,7 +36,7 @@ gray = Color 0.5 0.5 0.5
 white :: Color
 white = Color 1 1 1
 
--- | PANTONE 276 C
+-- | PANTONE 276 C
 navy :: Color
 navy = Color 0.125 0.11 0.243
 

@@ -29,7 +29,7 @@ diffuse p _ n = sampleUnitSphere <&> \u -> Ray p (n `plus` u)
 specular :: Material
 specular p v n = pure (Ray p (reflect v n))
 
--- | Smart constructor for reified 'Sphere's.
+-- | Smart constructor for reified 'Sphere's.
 sphere
     :: Vector  -- ^ Center.
     -> Double  -- ^ Radius.

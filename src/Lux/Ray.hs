@@ -7,8 +7,8 @@ import Lux.Vector ((*^), Vector, plus)
 
 
 data Ray = Ray
-    { origin    :: {-# UNPACK #-} !Vector
-    , direction :: {-# UNPACK #-} !Vector
+    { origin    :: {-# UNPACK #-} !Vector
+    , direction :: {-# UNPACK #-} !Vector
     }
 
 at :: Ray -> Double -> Vector

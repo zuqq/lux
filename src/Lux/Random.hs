@@ -15,7 +15,7 @@ import Data.Word (Word64)
 import Lux.Vector (Vector (Vector))
 
 
-data Result a = Result !a {-# UNPACK #-} !Word64
+data Result a = Result !a {-# UNPACK #-} !Word64
     deriving Functor
 
 newtype Random a = Random {run :: Word64 -> Result a}

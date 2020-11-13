@@ -13,8 +13,8 @@ import Lux.Vector ((*^), Vector (..), dot, minus, unit)
 
 
 data Sphere = Sphere
-    { center :: {-# UNPACK #-} !Vector
-    , radius :: {-# UNPACK #-} !Double
+    { center :: {-# UNPACK #-} !Vector
+    , radius :: {-# UNPACK #-} !Double
     }
 
 time :: Sphere -> Ray -> Maybe Double
