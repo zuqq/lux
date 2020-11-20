@@ -31,11 +31,10 @@ executables:
     - lux
 
 tests:
-  doctest:
+  lux-doctest:
     main: Main.hs
     source-dirs: doctest
     ghc-options:
-    - -O2
     - -threaded
     - -rtsopts
     - -with-rtsopts=-N
