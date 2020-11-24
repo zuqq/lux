@@ -33,6 +33,7 @@ data Picture = Picture
     }
 
 type Pixel = (Int, Int)
+
 {-
     Using existentials, we could get more general types like
 
@@ -92,7 +93,7 @@ trace world sky = go (50 :: Int) white
     go k !c !r = if k <= 0
         then pure c
         else case world r of
-            Nothing           -> pure (c `mix` sky (direction r))
+            Nothing           -> pure $ c `mix` sky (direction r)
             Just (Hit _ a mr) -> mr >>= go (k - 1) (a `mix` c)
 
 average :: Int -> Random Color -> Random Color

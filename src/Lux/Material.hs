@@ -27,7 +27,7 @@ diffuse :: Material
 diffuse p _ n = sampleUnitSphere <&> \u -> Ray p (n `plus` u)
 
 specular :: Material
-specular p v n = pure (Ray p (reflect v n))
+specular p v n = pure $ Ray p (reflect v n)
 
 -- | Smart constructor for reified 'Sphere's.
 sphere
@@ -37,10 +37,9 @@ sphere
     -> Material
     -> Object
 sphere center radius color material ray =
-    time s ray <&> \t ->
+    let sphere_ = Sphere {..}
+    in time sphere_ ray <&> \t ->
         let p = ray `at` t
             v = direction ray
-            n = normal s (ray `at` t) v
-        in Hit t color $ material p v n
-  where
-    s = Sphere {..}
+            n = normal sphere_ (ray `at` t) v
+        in Hit t color (material p v n)
