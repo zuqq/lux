@@ -9,7 +9,7 @@ module Lux.Sphere
 import Control.Applicative ((<|>))
 
 import Lux.Ray    (Ray (..))
-import Lux.Vector ((*^), Vector (..), dot, minus, unit)
+import Lux.Vector (Vector (..), dot, minus, unit)
 
 
 data Sphere = Sphere
@@ -36,13 +36,6 @@ time Sphere {..} Ray {..} =
         | t < 0.001 = Nothing
         | otherwise = Just t
 
--- | Unit normal at the point of impact, pointing in the same direction.
-normal
-    :: Sphere
-    -> Vector  -- ^ Point of impact.
-    -> Vector  -- ^ Direction of the incoming ray.
-    -> Vector
-normal Sphere {..} p v = unit $ a *^ n
-  where
-    n = p `minus` center
-    a = if dot v n > 0 then (-1) else 1
+-- | @normal sphere p@ is the outward-facing unit normal of @sphere@ at @p@.
+normal :: Sphere -> Vector -> Vector
+normal Sphere {..} p = unit $ p `minus` center

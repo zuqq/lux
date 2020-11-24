@@ -40,6 +40,4 @@ sphere center radius color material ray =
     let sphere_ = Sphere {..}
     in time sphere_ ray <&> \t ->
         let p = ray `at` t
-            v = direction ray
-            n = normal sphere_ (ray `at` t) v
-        in Hit t color (material p v n)
+        in Hit t color (material p (direction ray) (normal sphere_ p))
