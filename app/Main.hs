@@ -13,22 +13,22 @@ import Lux.Vector   (Vector (..), unit)
 
 main :: IO ()
 main = do
+    let width  = 400
+        height = 400
+
     let world = fromList
             [ sphere (Vector (-1) 0.5 (-3)) 0.5 glacier specular
             , sphere (Vector 0 0.5 0) 0.5 glacier specular
             , sphere (Vector 0 (-100) 0) 100 green diffuse
             ]
         sky (unit -> Vector _ y _) = gradient white blue $ (y + 1) / 2
-        width  = 400
-        height = 400
         frame = fromPicture Picture
             { lens     = Vector 0 2 3
             , angle    = pi / 4
             , aperture = 0.25
             , focus    = Vector 0 1 0
             , up       = Vector 0 1 0
-            , width    = width
-            , height   = height
+            , ..
             }
         scene = Scene {..}
 
