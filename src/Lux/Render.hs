@@ -77,7 +77,7 @@ fromPicture Picture {..} =
 data Hit = Hit {-# UNPACK #-} !Double Color (Random Ray)
 
 instance Semigroup Hit where
-    h @ (Hit t _ _) <> h' @ (Hit t' _ _) = if t <= t' then h else h'
+    h@(Hit t _ _) <> h'@(Hit t' _ _) = if t <= t' then h else h'
 
 type Object = Ray -> Maybe Hit
 
