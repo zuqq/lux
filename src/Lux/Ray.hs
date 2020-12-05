@@ -1,7 +1,8 @@
 module Lux.Ray
     ( Ray (..)
     , at
-    ) where
+    )
+    where
 
 import Lux.Vector ((*^), Vector, plus)
 

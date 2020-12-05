@@ -11,7 +11,8 @@ module Lux.Render
     , fromList
     , fromPicture
     , render
-    ) where
+    )
+    where
 
 import Control.Monad ((<=<))
 import Data.Foldable (foldl')

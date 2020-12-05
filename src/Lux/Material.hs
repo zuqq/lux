@@ -5,7 +5,8 @@ module Lux.Material
     , diffuse
     , specular
     , sphere
-    ) where
+    )
+    where
 
 import Data.Functor ((<&>))
 

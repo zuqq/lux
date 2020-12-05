@@ -15,7 +15,8 @@ module Lux.Color
     , (~+~)
     , gradient
     , mix
-    ) where
+    )
+    where
 
 
 data Color = Color

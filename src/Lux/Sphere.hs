@@ -4,7 +4,8 @@ module Lux.Sphere
     ( Sphere (..)
     , time
     , normal
-    ) where
+    )
+    where
 
 import Control.Applicative ((<|>))
 

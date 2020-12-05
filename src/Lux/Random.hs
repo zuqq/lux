@@ -7,7 +7,8 @@ module Lux.Random
     , sampleInterval
     , sampleUnitSphere
     , sampleUnitSquare
-    ) where
+    )
+    where
 
 import Data.Bits (unsafeShiftR, xor)
 import Data.Word (Word64)

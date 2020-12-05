@@ -8,7 +8,8 @@ module Lux.Vector
     , plus
     , reflect
     , unit
-    ) where
+    )
+    where
 
 
 data Vector = Vector
