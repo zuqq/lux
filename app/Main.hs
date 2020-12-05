@@ -1,9 +1,5 @@
 {-# LANGUAGE RecordWildCards, ViewPatterns #-}
 
-module Main
-    ( main
-    ) where
-
 import Lux.Color    (Color (..), blue, glacier, gradient, green, white)
 import Lux.Material (diffuse, specular, sphere)
 import Lux.Random   (Result (..), run)
