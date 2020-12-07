@@ -17,7 +17,6 @@ import Lux.Render (Hit (..), Object)
 import Lux.Sphere (Sphere (..), normal, time)
 import Lux.Vector (Vector, plus, reflect)
 
-
 type Material
     =  Vector  -- ^ Point of impact.
     -> Vector  -- ^ Direction of the incoming ray.

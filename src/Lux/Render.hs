@@ -22,7 +22,6 @@ import Lux.Random (Random, sampleDisk, sampleUnitSquare)
 import Lux.Ray    (Ray (..))
 import Lux.Vector ((*^), Vector (..), cross, len, minus, plus, unit)
 
-
 data Picture = Picture
     { lens     :: Vector  -- ^ Center of the lens.
     , angle    :: Double  -- ^ Angle of view.

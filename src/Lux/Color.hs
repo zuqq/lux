@@ -18,7 +18,6 @@ module Lux.Color
     )
     where
 
-
 data Color = Color
     {-# UNPACK #-} !Double
     {-# UNPACK #-} !Double

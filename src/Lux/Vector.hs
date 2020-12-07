@@ -11,7 +11,6 @@ module Lux.Vector
     )
     where
 
-
 data Vector = Vector
     {-# UNPACK #-} !Double
     {-# UNPACK #-} !Double

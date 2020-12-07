@@ -6,7 +6,6 @@ import Lux.Random   (Result (..), run)
 import Lux.Render   (Picture (..), Scene (..), fromList, fromPicture, render)
 import Lux.Vector   (Vector (..), unit)
 
-
 main :: IO ()
 main = do
     let width  = 400
