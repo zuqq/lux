@@ -1,20 +1,27 @@
 {-# LANGUAGE BangPatterns, RecordWildCards #-}
 
 module Lux
-    ( Frame
-    , Hit (..)
-    , Material
-    , Object
-    , Picture (..)
+    (
+    -- * Camera specification
+      CameraSpec (..)
+    -- * Camera
     , Pixel
-    , Scene (..)
-    , Sky
-    , diffuse
+    , Camera
+    , fromSpec
+    -- * Objects
+    , Hit (..)
+    , Object
     , fromList
-    , fromPicture
-    , render
+    -- * Materials
+    , Material
+    , diffuse
     , specular
+    -- * Constructors
     , sphere
+    -- * Rendering
+    , Sky
+    , Scene (..)
+    , render
     -- * Reexports
     , module Lux.Color
     , module Lux.Random
@@ -33,12 +40,12 @@ import Lux.Color
 import Lux.Random
 import Lux.Vector
 
-data Picture = Picture
+data CameraSpec = CameraSpec
     { lens     :: Vector  -- ^ Center of the lens.
     , angle    :: Double  -- ^ Angle of view.
     , aperture :: Double
     , focus    :: Vector  -- ^ Center of the focal plane.
-    , up       :: Vector  -- ^ "Up" direction.
+    , up       :: Vector  -- ^ Upward direction.
     , width    :: Int     -- ^ Width in pixels.
     , height   :: Int     -- ^ Height in pixels.
     }
@@ -48,15 +55,15 @@ type Pixel = (Int, Int)
 {-
     Using existentials, we could get more general types like
 
-    > type Frame = forall m. MonadRandom m => Pixel -> m Ray
+    > type Camera = forall m. MonadRandom m => Pixel -> m Ray
 
     instead of the hard-coded 'Random' monad. I decided against it because that
     seems like an awful lot of complexity for relatively little gain.
 -}
-type Frame = Pixel -> Random Ray
+type Camera = Pixel -> Random Ray
 
-fromPicture :: Picture -> Frame
-fromPicture Picture {..} =
+fromSpec :: CameraSpec -> Camera
+fromSpec CameraSpec {..} =
     let v = lens `minus` focus
         h = 2 * len v * tan (angle / 2)  -- Height of the screen.
         s = h / fromIntegral height      -- Side length of a pixel.
@@ -140,22 +147,22 @@ average n mc = go n black
         else mc >>= go (k - 1) . (c ~+~)
 
 data Scene = Scene
-    { world :: Object
-    , sky   :: Sky
-    , frame :: Frame
+    { world  :: Object
+    , sky    :: Sky
+    , camera :: Camera
     }
 
 {-
     Note that
 
-    > average 100 . trace world sky <=< frame
+    > average 100 . trace world sky <=< camera
 
     would be wrong here. Indeed, since '(.)' binds more tightly than '(<=<)',
     that's equivalent to
 
-    > (average 100 . trace world sky) <=< frame
+    > (average 100 . trace world sky) <=< camera
 
-    which doesn't average over 'frame'.
+    which doesn't average over 'camera'.
 -}
 render :: Scene -> Pixel -> Random Color
-render Scene {..} = average 100 . (trace world sky <=< frame)
+render Scene {..} = average 100 . (trace world sky <=< camera)

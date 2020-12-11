@@ -13,7 +13,7 @@ main = do
             , sphere (Vector 0 (-100) 0) 100 green diffuse
             ]
         sky (unit -> Vector _ y _) = gradient white blue $ (y + 1) / 2
-        frame = fromPicture Picture
+        camera = fromSpec CameraSpec
             { lens     = Vector 0 2 3
             , angle    = pi / 4
             , aperture = 0.25

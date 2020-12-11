@@ -1,6 +1,9 @@
 module Lux.Vector
-    ( (*^)
-    , Vector (..)
+    (
+    -- * Type
+      Vector (..)
+    -- * Operators
+    , (*^)
     , cross
     , dot
     , len

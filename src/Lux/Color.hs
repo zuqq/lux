@@ -2,7 +2,7 @@ module Lux.Color
     (
     -- * Type
       Color (..)
-    -- * Colors
+    -- * Constants
     , black
     , blue
     , glacier
