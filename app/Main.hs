@@ -1,10 +1,6 @@
 {-# LANGUAGE RecordWildCards, ViewPatterns #-}
 
-import Lux.Color    (Color (..), blue, glacier, gradient, green, white)
-import Lux.Material (diffuse, specular, sphere)
-import Lux.Random   (Result (..), run)
-import Lux.Render   (Picture (..), Scene (..), fromList, fromPicture, render)
-import Lux.Vector   (Vector (..), unit)
+import Lux
 
 main :: IO ()
 main = do

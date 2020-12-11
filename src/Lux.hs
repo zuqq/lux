@@ -1,26 +1,37 @@
 {-# LANGUAGE BangPatterns, RecordWildCards #-}
 
-module Lux.Render
+module Lux
     ( Frame
     , Hit (..)
+    , Material
     , Object
     , Picture (..)
     , Pixel
     , Scene (..)
     , Sky
+    , diffuse
     , fromList
     , fromPicture
     , render
+    , specular
+    , sphere
+    -- * Reexports
+    , module Lux.Color
+    , module Lux.Random
+    , module Lux.Vector
     )
     where
 
 import Control.Monad ((<=<))
 import Data.Foldable (foldl')
+import Data.Functor  ((<&>))
 
-import Lux.Color  ((*~), (~+~), Color (..), black, mix, white)
-import Lux.Random (Random, sampleDisk, sampleUnitSquare)
-import Lux.Ray    (Ray (..))
-import Lux.Vector ((*^), Vector (..), cross, len, minus, plus, unit)
+import Lux.Ray    (Ray (..), at)
+import Lux.Sphere (Sphere (..), normal, time)
+
+import Lux.Color
+import Lux.Random
+import Lux.Vector
 
 data Picture = Picture
     { lens     :: Vector  -- ^ Center of the lens.
@@ -84,6 +95,31 @@ fromList :: [Object] -> Object
 fromList objects ray = foldl' step Nothing objects
   where
     step mhit object = mhit <> object ray
+
+type Material
+    =  Vector  -- ^ Point of impact.
+    -> Vector  -- ^ Direction of the incoming ray.
+    -> Vector  -- ^ Unit normal at the point of impact.
+    -> Random Ray
+
+diffuse :: Material
+diffuse p _ n = sampleUnitSphere <&> \u -> Ray p (n `plus` u)
+
+specular :: Material
+specular p v n = pure $ Ray p (reflect v n)
+
+-- | Smart constructor for reified 'Sphere's.
+sphere
+    :: Vector  -- ^ Center.
+    -> Double  -- ^ Radius.
+    -> Color
+    -> Material
+    -> Object
+sphere center radius color material ray =
+    let sphere_ = Sphere {..}
+    in time sphere_ ray <&> \t ->
+        let p = ray `at` t
+        in Hit t color (material p (direction ray) (normal sphere_ p))
 
 type Sky = Vector -> Color
 
