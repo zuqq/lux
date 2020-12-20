@@ -1,3 +1,4 @@
+-- | Monomorphic three-dimensional vectors with 'Double' coordinates.
 module Lux.Vector
     (
     -- * Type
@@ -14,6 +15,10 @@ module Lux.Vector
     )
     where
 
+-- | A vector in three-dimensional space.
+--
+-- We exclusively work with the vector space structure of three-dimensional
+-- space, making no distinction between points and vectors.
 data Vector = Vector
     {-# UNPACK #-} !Double
     {-# UNPACK #-} !Double
@@ -26,9 +31,11 @@ infixr 7 *^
 
 infixl 6 `minus`
 
+-- | Add two vectors.
 plus :: Vector -> Vector -> Vector
 plus (Vector x y z) (Vector x' y' z') = Vector (x + x') (y + y') (z + z')
 
+-- | Subtract the second argument from the first.
 minus :: Vector -> Vector -> Vector
 minus (Vector x y z) (Vector x' y' z') = Vector (x - x') (y - y') (z - z')
 
@@ -44,15 +51,19 @@ cross :: Vector -> Vector -> Vector
 cross (Vector x y z) (Vector x' y' z') =
     Vector (y * z' - z * y') (z * x' - x * z') (x * y' - y * x')
 
+-- | Dot product of two vectors.
 dot :: Vector -> Vector -> Double
 dot (Vector x y z) (Vector x' y' z') = x * x' + y * y' + z * z'
 
+-- | Scalar multiplication.
 (*^) :: Double -> Vector -> Vector
 (*^) a (Vector x y z) = Vector (a * x) (a * y) (a * z)
 
+-- | Length with respect to 'dot'
 len :: Vector -> Double
 len v = sqrt $ dot v v
 
+-- | Normalization with respect to 'len'.
 unit :: Vector -> Vector
 unit v = (1 / len v) *^ v
 

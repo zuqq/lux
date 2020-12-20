@@ -1,3 +1,7 @@
+-- | Floating-point representation of RGB colors.
+--
+-- The 'Color' type is isomorphic to 'Lux.Vector.Vector'; it is distinguished
+-- only because it needs a different set of combinators (e.g., 'mix').
 module Lux.Color
     (
     -- * Type
@@ -18,10 +22,14 @@ module Lux.Color
     )
     where
 
+-- | Floating-point representation of RGB colors.
 data Color = Color
     {-# UNPACK #-} !Double
+    -- ^ R
     {-# UNPACK #-} !Double
+    -- ^ G
     {-# UNPACK #-} !Double
+    -- ^ B
 
 black :: Color
 black = Color 0 0 0
@@ -51,12 +59,15 @@ glacier = Color 0.773 0.777 0.780
 infixr 6 ~+~
 infixr 7 *~, `mix`
 
+-- | Channel-wise multiplication with a scalar.
 (*~) :: Double -> Color -> Color
 (*~) a (Color r g b) = Color (a * r) (a * g) (a * b)
 
+-- | Channel-wise sum of two colors.
 (~+~) :: Color -> Color -> Color
 (~+~) (Color r g b) (Color r' g' b') = Color (r + r') (g + g') (b + b')
 
+-- | @gradient x y@ is a linear gradient from @x@ to @y@.
 gradient :: Color -> Color -> Double -> Color
 gradient x y t = (1 - t) *~ x ~+~ t *~ y
 

@@ -2,8 +2,8 @@
 
 module Lux.Sphere
     ( Sphere (..)
-    , time
     , normal
+    , time
     )
     where
 
@@ -17,6 +17,7 @@ data Sphere = Sphere
     , radius :: {-# UNPACK #-} !Double
     }
 
+-- | Compute the smallest @t :: Double@ at which the 'Ray' hits the 'Sphere'.
 time :: Sphere -> Ray -> Maybe Double
 time Sphere {..} Ray {..} =
     let oc = origin `minus` center
