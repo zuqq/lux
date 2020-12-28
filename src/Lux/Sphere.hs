@@ -9,8 +9,8 @@ module Lux.Sphere
 
 import Control.Applicative ((<|>))
 
-import Lux.Ray    (Ray (..))
-import Lux.Vector (Vector (..), dot, minus, unit)
+import Lux.Ray
+import Lux.Vector
 
 data Sphere = Sphere
     { center :: {-# UNPACK #-} !Vector

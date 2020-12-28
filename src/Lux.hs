@@ -1,10 +1,5 @@
 {-# LANGUAGE BangPatterns, RecordWildCards #-}
 
--- | A purely functional implementation of <https://raytracing.github.io/books/RayTracingInOneWeekend.html Ray Tracing in One Weekend>.
---
--- = Usage
---
--- Construct a 'Scene' and 'render' away.
 module Lux
     (
     -- * Camera specification
@@ -36,13 +31,12 @@ module Lux
 
 import Control.Monad ((<=<))
 import Data.Foldable (foldl')
-import Data.Functor  ((<&>))
-
-import Lux.Ray    (Ray (..), at)
-import Lux.Sphere (Sphere (..), normal, time)
+import Data.Functor ((<&>))
 
 import Lux.Color
 import Lux.Random
+import Lux.Ray
+import Lux.Sphere
 import Lux.Vector
 
 -- | Camera specification.

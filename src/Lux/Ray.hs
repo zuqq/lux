@@ -4,7 +4,7 @@ module Lux.Ray
     )
     where
 
-import Lux.Vector ((*^), Vector, plus)
+import Lux.Vector
 
 -- | A ray in three-dimensional space.
 data Ray = Ray

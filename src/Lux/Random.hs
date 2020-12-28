@@ -13,7 +13,7 @@ module Lux.Random
 import Data.Bits (unsafeShiftR, xor)
 import Data.Word (Word64)
 
-import Lux.Vector (Vector (Vector))
+import Lux.Vector
 
 data Result a = Result !a {-# UNPACK #-} !Word64
     deriving Functor
