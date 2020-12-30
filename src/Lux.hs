@@ -17,7 +17,7 @@ module Lux
     , diffuse
     , specular
     -- * Constructors
-    , sphere
+    , reifiedSphere
     -- * Rendering
     , Sky
     , Scene (..)
@@ -138,17 +138,17 @@ specular :: Material
 specular p v n = pure $ Ray p (reflect v n)
 
 -- | Construct a reified 'Sphere'.
-sphere
+reifiedSphere
     :: Vector  -- ^ Center.
     -> Double  -- ^ Radius.
     -> Color
     -> Material
     -> Object
-sphere center radius color material ray =
-    let sphere_ = Sphere {..}
-    in time sphere_ ray <&> \t ->
+reifiedSphere center radius color material ray =
+    let sphere = Sphere {..}
+    in time sphere ray <&> \t ->
         let p = ray `at` t
-        in Hit t color (material p (direction ray) (normal sphere_ p))
+        in Hit t color (material p (direction ray) (normal sphere p))
 
 type Sky = Vector -> Color
 

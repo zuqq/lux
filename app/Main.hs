@@ -8,9 +8,9 @@ main = do
         height = 400
 
     let world = fromList
-            [ sphere (Vector (-1) 0.5 (-3)) 0.5 glacier specular
-            , sphere (Vector 0 0.5 0) 0.5 glacier specular
-            , sphere (Vector 0 (-100) 0) 100 green diffuse
+            [ reifiedSphere (Vector (-1) 0.5 (-3)) 0.5 glacier specular
+            , reifiedSphere (Vector 0 0.5 0) 0.5 glacier specular
+            , reifiedSphere (Vector 0 (-100) 0) 100 green diffuse
             ]
         sky (unit -> Vector _ y _) = gradient white blue $ (y + 1) / 2
         camera = fromSpec CameraSpec
